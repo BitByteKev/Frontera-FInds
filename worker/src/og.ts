@@ -32,3 +32,28 @@ export function buildItemMeta(item: Item, siteUrl: string): ItemMeta {
     image: item.photoKeys[0] ? `${base}/img/${item.photoKeys[0]}` : `${base}/og-default.png`,
   };
 }
+
+// Inject per-item meta into the built HTML shell. Uses the Workers-runtime
+// HTMLRewriter: rewrites <title>/<meta name=description> and appends OG/Twitter
+// tags to <head>. Returns the rewritten HTML as a string.
+export async function injectMeta(shellHtml: string, item: Item, siteUrl: string): Promise<string> {
+  const m = buildItemMeta(item, siteUrl);
+  const tags =
+    `<meta property="og:type" content="product" />` +
+    `<meta property="og:title" content="${escapeHtml(m.title)}" />` +
+    `<meta property="og:description" content="${escapeHtml(m.description)}" />` +
+    `<meta property="og:url" content="${escapeHtml(m.url)}" />` +
+    `<meta property="og:image" content="${escapeHtml(m.image)}" />` +
+    `<meta name="twitter:card" content="summary_large_image" />` +
+    `<meta name="twitter:title" content="${escapeHtml(m.title)}" />` +
+    `<meta name="twitter:description" content="${escapeHtml(m.description)}" />` +
+    `<meta name="twitter:image" content="${escapeHtml(m.image)}" />`;
+
+  const rewritten = new HTMLRewriter()
+    .on("title", { element(el) { el.setInnerContent(escapeHtml(m.title), { html: true }); } })
+    .on('meta[name="description"]', { element(el) { el.setAttribute("content", m.description); } })
+    .on("head", { element(el) { el.append(tags, { html: true }); } })
+    .transform(new Response(shellHtml, { headers: { "content-type": "text/html" } }));
+
+  return await rewritten.text();
+}

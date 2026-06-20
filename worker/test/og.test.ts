@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildItemMeta, escapeHtml } from "../src/og";
+import { buildItemMeta, escapeHtml, injectMeta } from "../src/og";
 import type { Item } from "../src/db";
 
 const item: Item = {
@@ -25,5 +25,22 @@ describe("buildItemMeta", () => {
 describe("escapeHtml", () => {
   it("escapes the five markup-significant characters", () => {
     expect(escapeHtml('a "b" <c> & \'d\'')).toBe("a &quot;b&quot; &lt;c&gt; &amp; &#39;d&#39;");
+  });
+});
+
+const SHELL = `<!doctype html><html><head>` +
+  `<title>Frontera Finds</title>` +
+  `<meta name="description" content="default desc" />` +
+  `</head><body><div id="root"></div></body></html>`;
+
+describe("injectMeta", () => {
+  it("replaces title/description and appends OG + Twitter tags, escaped", async () => {
+    const html = await injectMeta(SHELL, item, "https://fronterafinds.com");
+    expect(html).toContain("<title>Trek &quot;920&quot; bike · Frontera Finds</title>");
+    expect(html).toContain('property="og:title" content="Trek &quot;920&quot; bike · Frontera Finds"');
+    expect(html).toContain('property="og:image" content="https://fronterafinds.com/img/items/abc-a.jpg"');
+    expect(html).toContain('name="twitter:card" content="summary_large_image"');
+    expect(html).toContain('property="og:description"');
+    expect(html).not.toContain('content="default desc"');
   });
 });
