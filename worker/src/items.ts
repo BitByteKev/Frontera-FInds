@@ -2,6 +2,8 @@ import { Hono } from "hono";
 import type { Env } from "./index";
 import { rowToItem, type ItemRow } from "./db";
 
+const MAX_LIST = 200;
+
 async function photoKeysFor(db: D1Database, itemIds: string[]): Promise<Map<string, string[]>> {
   const map = new Map<string, string[]>();
   if (itemIds.length === 0) return map;
@@ -30,12 +32,15 @@ publicItems.get("/api/items", async (c) => {
   const where: string[] = [];
   const binds: unknown[] = [];
   where.push(includeSold ? "status IN ('published','sold')" : "status = 'published'");
-  if (q) { binds.push(`%${q}%`); where.push(`(title LIKE ?${binds.length} OR description LIKE ?${binds.length})`); }
+  if (q) {
+    binds.push(`%${q}%`, `%${q}%`);
+    where.push(`(title LIKE ?${binds.length - 1} OR description LIKE ?${binds.length})`);
+  }
   if (category) { binds.push(category); where.push(`category = ?${binds.length}`); }
   if (shipsUsa) where.push("ships_usa = 1");
   if (local) where.push("local_sdtj = 1");
 
-  const sql = `SELECT * FROM items WHERE ${where.join(" AND ")} ORDER BY created_at DESC LIMIT 200`;
+  const sql = `SELECT * FROM items WHERE ${where.join(" AND ")} ORDER BY created_at DESC LIMIT ${MAX_LIST}`;
   const { results } = await c.env.DB.prepare(sql).bind(...binds).all<ItemRow>();
   const keys = await photoKeysFor(c.env.DB, results.map((r) => r.id));
   return c.json({ items: results.map((r) => rowToItem(r, keys.get(r.id) ?? [])) });

@@ -2,9 +2,10 @@ import { env, createExecutionContext, waitOnExecutionContext } from "cloudflare:
 import { describe, it, expect } from "vitest";
 import "./setup-db";
 import app from "../src/index";
-import { rowToItem } from "../src/db";
 
 async function seed() {
+  await env.DB.prepare(`DELETE FROM item_photos`).run();
+  await env.DB.prepare(`DELETE FROM items`).run();
   const now = Date.now();
   await env.DB.prepare(
     `INSERT OR REPLACE INTO items (id,title,description,price_cents,category,ships_usa,local_sdtj,status,created_at,updated_at)
