@@ -40,6 +40,45 @@ describe("GET /api/items", () => {
     const body = await res.json<{ items: any[] }>();
     expect(body.items.every((i) => i.localSdtj)).toBe(true);
   });
+
+  it("?q= filters by title/description", async () => {
+    await seed();
+    const ctx1 = createExecutionContext();
+    const res1 = await app.fetch(new Request("http://x/api/items?q=Trek"), env, ctx1);
+    await waitOnExecutionContext(ctx1);
+    expect(res1.status).toBe(200);
+    const body1 = await res1.json<{ items: any[] }>();
+    expect(body1.items.map((i) => i.id)).toContain("itm1");
+
+    const ctx2 = createExecutionContext();
+    const res2 = await app.fetch(new Request("http://x/api/items?q=zzzznomatch"), env, ctx2);
+    await waitOnExecutionContext(ctx2);
+    expect(res2.status).toBe(200);
+    const body2 = await res2.json<{ items: any[] }>();
+    expect(body2.items).toHaveLength(0);
+  });
+
+  it("?sold=1 includes sold items; omitting it excludes them", async () => {
+    await seed();
+    await env.DB.prepare(
+      `INSERT OR REPLACE INTO items (id,title,description,price_cents,category,ships_usa,local_sdtj,status,created_at,updated_at)
+       VALUES ('itm3','Sold chair','',5000,'home',1,1,'sold',?1,?1)`
+    ).bind(Date.now()).run();
+
+    const ctx1 = createExecutionContext();
+    const res1 = await app.fetch(new Request("http://x/api/items?sold=1"), env, ctx1);
+    await waitOnExecutionContext(ctx1);
+    expect(res1.status).toBe(200);
+    const body1 = await res1.json<{ items: any[] }>();
+    expect(body1.items.map((i) => i.id)).toContain("itm3");
+
+    const ctx2 = createExecutionContext();
+    const res2 = await app.fetch(new Request("http://x/api/items"), env, ctx2);
+    await waitOnExecutionContext(ctx2);
+    expect(res2.status).toBe(200);
+    const body2 = await res2.json<{ items: any[] }>();
+    expect(body2.items.map((i) => i.id)).not.toContain("itm3");
+  });
 });
 
 describe("GET /api/items/:id", () => {
@@ -55,6 +94,14 @@ describe("GET /api/items/:id", () => {
   it("404s unknown id", async () => {
     const ctx = createExecutionContext();
     const res = await app.fetch(new Request("http://x/api/items/nope"), env, ctx);
+    await waitOnExecutionContext(ctx);
+    expect(res.status).toBe(404);
+  });
+
+  it("hidden item detail returns 404", async () => {
+    await seed();
+    const ctx = createExecutionContext();
+    const res = await app.fetch(new Request("http://x/api/items/itm2"), env, ctx);
     await waitOnExecutionContext(ctx);
     expect(res.status).toBe(404);
   });
