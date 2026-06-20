@@ -47,9 +47,9 @@ export default function AdminManage() {
       <div style={{ display: "grid", gap: 10, marginTop: 12 }}>
         {items.map((it) => (
           <div key={it.id} style={{ display: "flex", gap: 12, alignItems: "center",
-            border: "1px solid var(--ff-line)", borderRadius: 10, padding: 8, background: "#fff" }}>
+            border: "1px solid var(--ff-line)", borderRadius: 10, padding: 8, background: "var(--ff-card)" }}>
             <img src={it.photoKeys[0] ? imgUrl(it.photoKeys[0]) : ""} alt=""
-              style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 8, background: "#f0ead9" }} />
+              style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 8, background: "var(--ff-sand)" }} />
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 700 }}>{it.title}</div>
               <div style={{ color: "var(--ff-muted)", fontSize: 13 }}>
