@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { publicItems, adminItems } from "./items";
 import { photos } from "./photos";
 import { auth } from "./auth";
+import { generate } from "./generate";
 
 export interface Env {
   DB: D1Database;
@@ -23,5 +24,6 @@ app.route("/", publicItems);
 app.route("/", adminItems);
 app.route("/", photos);
 app.route("/", auth);
+app.route("/", generate);
 
 export default app;
