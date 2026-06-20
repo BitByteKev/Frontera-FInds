@@ -44,9 +44,9 @@ export async function signToken(password: string, exp: number): Promise<string> 
 export async function verifyToken(password: string, token: string): Promise<boolean> {
   const [payload, sig] = token.split(".");
   if (!payload || !sig) return false;
-  const expected = await hmac(password, payload);
-  if (!timingSafeEqual(b64urlDecode(sig), expected)) return false;
   try {
+    const expected = await hmac(password, payload);
+    if (!timingSafeEqual(b64urlDecode(sig), expected)) return false;
     const { exp } = JSON.parse(new TextDecoder().decode(b64urlDecode(payload)));
     return typeof exp === "number" && exp > Date.now();
   } catch {
