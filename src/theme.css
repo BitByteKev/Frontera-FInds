@@ -217,3 +217,10 @@ a { color: var(--ff-agave-600); }
 .ff-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
 .ff-filters .ff-input { flex: 1 1 160px; min-width: 0; }
 .ff-input-price { flex: 0 0 110px; }
+.ff-input {
+  padding: 10px 12px; border: 1px solid var(--ff-line); border-radius: 8px;
+  font-size: 15px; font-family: var(--font-text); background: var(--ff-card); color: var(--ff-text);
+}
+.ff-input:focus {
+  outline: none; border-color: var(--ff-agave-600); box-shadow: 0 0 0 3px rgba(30, 138, 63, 0.12);
+}
