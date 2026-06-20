@@ -1,0 +1,37 @@
+{
+  "name": "frontera-finds",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:worker": "wrangler dev --config wrangler.toml",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:worker": "vitest run --config worker/vitest.config.ts",
+    "db:apply": "wrangler d1 migrations apply frontera_finds --config wrangler.toml",
+    "db:apply:local": "wrangler d1 migrations apply frontera_finds --local --config wrangler.toml",
+    "deploy": "npm run build && wrangler deploy --config wrangler.toml"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.70.0",
+    "hono": "^4.12.23",
+    "mimetext": "^3.0.27",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.0"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.8.0",
+    "@cloudflare/workers-types": "^4.20260528.1",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "happy-dom": "^20.9.0",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11",
+    "vitest": "^2.1.5",
+    "wrangler": "^4.95.0"
+  }
+}

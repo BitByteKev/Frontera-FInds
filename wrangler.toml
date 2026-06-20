@@ -1,0 +1,25 @@
+name = "frontera-finds"
+main = "worker/src/index.ts"
+compatibility_date = "2026-06-19"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+AI_MODEL = "claude-opus-4-8"
+PUBLIC_WHATSAPP = "+16199448759"
+PUBLIC_SMS = "+16199448759"
+PUBLIC_INSTAGRAM_URL = "https://instagram.com/REPLACE_ME"
+OWNER_EMAIL = "kevincromley2020@gmail.com"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "frontera_finds"
+database_id = "REPLACE_WITH_REAL_ID"
+migrations_dir = "worker/migrations"
+
+[[r2_buckets]]
+binding = "PHOTOS"
+bucket_name = "frontera-finds-photos"
+
+[[send_email]]
+name = "SEND_EMAIL"
+destination_address = "kevincromley2020@gmail.com"
