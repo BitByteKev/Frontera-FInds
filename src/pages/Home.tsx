@@ -12,20 +12,42 @@ export default function Home() {
 
   const ships = params.get("ships") === "1";
   const local = params.get("local") === "1";
+  const q = params.get("q") ?? "";
+  const sort = params.get("sort") ?? "newest";
+  const minPrice = params.get("minPrice") ?? "";
+  const maxPrice = params.get("maxPrice") ?? "";
 
   useEffect(() => {
     setLoading(true);
-    api.list(params)
+    // Build the API query from the URL: always include sold (shown with a badge),
+    // and convert the dollar price inputs to cents for the API.
+    const api1 = new URLSearchParams();
+    for (const k of ["q", "category", "ships", "local", "sort"]) {
+      const v = params.get(k);
+      if (v) api1.set(k, v);
+    }
+    api1.set("sold", "1");
+    const min = Number(params.get("minPrice"));
+    if (params.get("minPrice") && Number.isFinite(min)) api1.set("minPrice", String(Math.round(min * 100)));
+    const max = Number(params.get("maxPrice"));
+    if (params.get("maxPrice") && Number.isFinite(max)) api1.set("maxPrice", String(Math.round(max * 100)));
+
+    api.list(api1)
       .then((r) => { setItems(r.items); setError(null); })
       .catch((e) => setError(String(e)))
       .finally(() => setLoading(false));
   }, [params]);
 
-  function toggle(key: "ships" | "local") {
+  // Update a single URL param (empty value removes it). Shareable + reloadable.
+  // replace:true so per-keystroke edits don't flood browser history.
+  function setParam(key: string, value: string) {
     const next = new URLSearchParams(params);
-    if (next.get(key) === "1") next.delete(key);
-    else next.set(key, "1");
-    setParams(next);
+    if (value) next.set(key, value);
+    else next.delete(key);
+    setParams(next, { replace: true });
+  }
+  function toggle(key: "ships" | "local") {
+    setParam(key, params.get(key) === "1" ? "" : "1");
   }
 
   return (
@@ -41,6 +63,24 @@ export default function Home() {
       </span>
     </div>
     <main className="ff-wrap">
+      <div className="ff-filters">
+        <input
+          className="ff-input"
+          type="search"
+          placeholder="Search items…"
+          defaultValue={q}
+          onChange={(e) => setParam("q", e.target.value.trim())}
+        />
+        <select className="ff-input" value={sort} onChange={(e) => setParam("sort", e.target.value === "newest" ? "" : e.target.value)}>
+          <option value="newest">Newest</option>
+          <option value="price_asc">Price: low to high</option>
+          <option value="price_desc">Price: high to low</option>
+        </select>
+        <input className="ff-input ff-input-price" type="number" min="0" placeholder="Min $" defaultValue={minPrice}
+          onChange={(e) => setParam("minPrice", e.target.value)} />
+        <input className="ff-input ff-input-price" type="number" min="0" placeholder="Max $" defaultValue={maxPrice}
+          onChange={(e) => setParam("maxPrice", e.target.value)} />
+      </div>
       <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
         <button className={ships ? "ff-btn ff-btn-green" : "ff-btn ff-btn-outline"} onClick={() => toggle("ships")}>
           Ships USA
@@ -52,7 +92,7 @@ export default function Home() {
 
       {loading && <p>Loading…</p>}
       {error && <p style={{ color: "#a50e0e" }}>Couldn't load items: {error}</p>}
-      {!loading && !error && items.length === 0 && <p>No items yet — check back soon.</p>}
+      {!loading && !error && items.length === 0 && <p>No items match your filters.</p>}
 
       <div className="ff-grid">
         {items.map((it) => <ItemCard key={it.id} item={it} />)}

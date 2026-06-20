@@ -212,3 +212,8 @@ a { color: var(--ff-agave-600); }
 }
 .ff-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .ff-thumb-active { border-color: var(--ff-agave-600); }
+
+/* ---- Home filter bar ---- */
+.ff-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.ff-filters .ff-input { flex: 1 1 160px; min-width: 0; }
+.ff-input-price { flex: 0 0 110px; }
