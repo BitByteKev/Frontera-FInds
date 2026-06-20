@@ -29,6 +29,17 @@ export default function Home() {
   }
 
   return (
+    <>
+    <div className="ff-hero">
+      <div className="ff-hero-tag">
+        <b>Two cities. One marketplace.</b>
+        <i>El swapmeet sin fronteras</i>
+      </div>
+      <span className="ff-pill">
+        San Diego <span className="ff-arrow">⟷</span> Tijuana
+        <span className="ff-dot" /> Shipping across the USA
+      </span>
+    </div>
     <main className="ff-wrap">
       <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
         <button className={ships ? "ff-btn ff-btn-green" : "ff-btn ff-btn-outline"} onClick={() => toggle("ships")}>
@@ -47,5 +58,6 @@ export default function Home() {
         {items.map((it) => <ItemCard key={it.id} item={it} />)}
       </div>
     </main>
+    </>
   );
 }

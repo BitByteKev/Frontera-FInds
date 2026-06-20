@@ -7,3 +7,6 @@ dist
 *.tsbuildinfo
 vite.config.d.ts
 vite.config.js
+
+# Brand identity pack (design-tool export, local reference)
+Frontera Finds brand identity/

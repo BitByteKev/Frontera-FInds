@@ -5,7 +5,7 @@ export default function Badges({ item }: { item: Item }) {
     <div className="ff-badges">
       {item.status === "sold" && <span className="ff-sold-ribbon">SOLD</span>}
       {item.shipsUsa && <span className="ff-badge ff-badge-ship">Ships USA</span>}
-      {item.localSdtj && <span className="ff-badge ff-badge-local">Local · SD/TJ</span>}
+      {item.localSdtj && <span className="ff-badge ff-badge-local">Local · SD ⟷ TJ</span>}
     </div>
   );
 }
