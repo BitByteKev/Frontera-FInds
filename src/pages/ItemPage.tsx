@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import type { Item } from "../lib/types";
-import { money, imgUrl } from "../lib/format";
+import { money } from "../lib/format";
 import Badges from "../components/Badges";
 import ContactButtons from "../components/ContactButtons";
+import Gallery from "../components/Gallery";
 
 export default function ItemPage() {
   const { id } = useParams();
@@ -21,12 +22,7 @@ export default function ItemPage() {
 
   return (
     <main className="ff-wrap" style={{ maxWidth: 760 }}>
-      <div style={{ display: "grid", gap: 10 }}>
-        {item.photoKeys.map((k) => (
-          <img key={k} src={imgUrl(k)} alt={item.title} style={{ width: "100%", borderRadius: 12 }} />
-        ))}
-        {item.photoKeys.length === 0 && <div className="ff-card-img" style={{ borderRadius: 12 }} />}
-      </div>
+      <Gallery photoKeys={item.photoKeys} title={item.title} />
       <h1 style={{ marginBottom: 4 }}>{item.title}</h1>
       <div className="ff-price" style={{ fontSize: 24 }}>{money(item.priceCents)}</div>
       <Badges item={item} />
