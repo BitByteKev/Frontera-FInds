@@ -3,6 +3,7 @@ import { publicItems, adminItems } from "./items";
 import { photos } from "./photos";
 import { auth } from "./auth";
 import { generate } from "./generate";
+import { contact } from "./contact";
 
 export interface Env {
   DB: D1Database;
@@ -20,10 +21,18 @@ export interface Env {
 const app = new Hono<{ Bindings: Env }>();
 
 app.get("/api/health", (c) => c.json({ ok: true }));
+app.get("/api/config", (c) =>
+  c.json({
+    whatsapp: c.env.PUBLIC_WHATSAPP,
+    sms: c.env.PUBLIC_SMS,
+    instagramUrl: c.env.PUBLIC_INSTAGRAM_URL,
+  })
+);
 app.route("/", publicItems);
 app.route("/", adminItems);
 app.route("/", photos);
 app.route("/", auth);
 app.route("/", generate);
+app.route("/", contact);
 
 export default app;
