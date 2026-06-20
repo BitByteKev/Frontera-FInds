@@ -121,6 +121,22 @@ a { color: var(--ff-agave-600); }
 .ff-badge-local { background: #f4e2d6; color: var(--ff-clay); }
 .ff-sold-ribbon { background: var(--ff-ink); color: var(--ff-bone); font: 700 11px var(--font-text); letter-spacing: 0.08em; padding: 3px 9px; border-radius: 999px; }
 
+/* Sold marker: ribbon over card thumbnail + inline pill on the item page. */
+.ff-card-media { position: relative; }
+.ff-badge-sold {
+  background: var(--ff-clay); color: #fff;
+  font: 700 11px var(--font-text); letter-spacing: 0.04em;
+  padding: 4px 10px; border-radius: 999px;
+}
+.ff-card-sold {
+  position: absolute; top: 10px; left: 10px;
+  background: var(--ff-clay); color: #fff;
+  font: 700 11px var(--font-text); letter-spacing: 0.04em;
+  padding: 4px 10px; border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+.ff-card-img-sold { opacity: 0.78; }
+
 /* ---- Buttons ---- */
 .ff-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
