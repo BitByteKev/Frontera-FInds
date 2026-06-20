@@ -28,7 +28,7 @@ photos.get("/img/:key{.+}", async (c) => {
 // Admin guard is applied where this is mounted (Task 6).
 photos.post("/api/admin/upload", async (c) => {
   const form = await c.req.formData();
-  const files = form.getAll("file").filter((f): f is File => f instanceof File);
+  const files = (form.getAll("file") as (File | string)[]).filter((f): f is File => f instanceof File);
   if (files.length === 0) return c.json({ error: "no_files" }, 400);
 
   const keys: string[] = [];
