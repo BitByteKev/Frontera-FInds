@@ -5,11 +5,11 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://REPLACE-WITH-YOUR-WORKER-URL.workers.dev/api/:path*"
+      "destination": "https://frontera-finds.kevincromley2020.workers.dev/api/:path*"
     },
     {
       "source": "/img/:path*",
-      "destination": "https://REPLACE-WITH-YOUR-WORKER-URL.workers.dev/img/:path*"
+      "destination": "https://frontera-finds.kevincromley2020.workers.dev/img/:path*"
     }
   ]
 }
