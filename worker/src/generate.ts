@@ -40,16 +40,23 @@ generate.post("/api/admin/generate", async (c) => {
   const { keys } = await c.req.json<{ keys: string[] }>();
   if (!keys || keys.length === 0) return c.json({ error: "no_keys" }, 400);
 
+  // Anthropic rejects any single image whose base64 payload exceeds 10 MB.
+  // Skip oversized photos rather than letting the whole request 400.
+  const MAX_IMAGE_B64 = 10 * 1024 * 1024;
   const images: Anthropic.ImageBlockParam[] = [];
+  let skippedLarge = false;
   for (const key of keys.slice(0, 4)) {
     const obj = await c.env.PHOTOS.get(key);
     if (!obj) continue;
     const ext = key.split(".").pop()?.toLowerCase() ?? "jpg";
     const media = MEDIA_BY_EXT[ext] ?? "image/jpeg";
-    const bytes = new Uint8Array(await obj.arrayBuffer());
-    images.push({ type: "image", source: { type: "base64", media_type: media, data: toBase64(bytes) } });
+    const data = toBase64(new Uint8Array(await obj.arrayBuffer()));
+    if (data.length > MAX_IMAGE_B64) { skippedLarge = true; continue; }
+    images.push({ type: "image", source: { type: "base64", media_type: media, data } });
   }
-  if (images.length === 0) return c.json({ error: "photos_not_found" }, 400);
+  if (images.length === 0) {
+    return c.json({ error: skippedLarge ? "images_too_large" : "photos_not_found" }, 400);
+  }
 
   const client = new Anthropic({ apiKey: c.env.ANTHROPIC_API_KEY });
 
@@ -58,7 +65,7 @@ generate.post("/api/admin/generate", async (c) => {
   // `any` so these extra body params pass through to the API without tsc errors.
   const params: any = {
     model: c.env.AI_MODEL || "claude-opus-4-8",
-    max_tokens: 1024,
+    max_tokens: 16000,
     thinking: { type: "adaptive" },
     system: SYSTEM,
     output_config: { format: { type: "json_schema", schema: SCHEMA } },

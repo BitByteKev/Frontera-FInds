@@ -4,6 +4,33 @@ import { adminApi, getToken } from "../../lib/api";
 import type { Item } from "../../lib/types";
 import { imgUrl } from "../../lib/format";
 
+// Downscale photos before upload. Phone images (~8 MB) exceed Anthropic's 10 MB
+// per-image limit once base64-encoded, which breaks the AI generate button.
+// 1568px is Claude's effective vision resolution, so this loses no useful detail
+// while keeping uploads small (also speeds the slideshow and saves storage).
+async function downscaleImage(file: File, maxDim = 1568, quality = 0.85): Promise<File> {
+  if (!file.type.startsWith("image/")) return file;
+  let bitmap: ImageBitmap;
+  try {
+    bitmap = await createImageBitmap(file);
+  } catch {
+    return file; // unsupported format (e.g. HEIC on some browsers) — upload as-is
+  }
+  const scale = Math.min(1, maxDim / Math.max(bitmap.width, bitmap.height));
+  const w = Math.max(1, Math.round(bitmap.width * scale));
+  const h = Math.max(1, Math.round(bitmap.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return file;
+  ctx.drawImage(bitmap, 0, 0, w, h);
+  bitmap.close();
+  const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, "image/jpeg", quality));
+  if (!blob) return file;
+  const name = file.name.replace(/\.[^.]+$/, "") + ".jpg";
+  return new File([blob], name, { type: "image/jpeg" });
+}
+
 export default function AdminEdit() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -42,7 +69,8 @@ export default function AdminEdit() {
     if (files.length === 0) return;
     setUploading(true); setError(null);
     try {
-      const { keys } = await adminApi.upload(files);
+      const shrunk = await Promise.all(files.map((f) => downscaleImage(f)));
+      const { keys } = await adminApi.upload(shrunk);
       setPhotoKeys((prev) => [...prev, ...keys]);
     } catch { setError("Upload failed."); }
     finally { setUploading(false); }
