@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { adminApi, getToken, setToken } from "../../lib/api";
 
 export default function AdminLogin() {
@@ -7,7 +7,7 @@ export default function AdminLogin() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  if (getToken()) navigate("/admin/manage");
+  if (getToken()) return <Navigate to="/admin/manage" replace />;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
