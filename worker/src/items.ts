@@ -42,7 +42,19 @@ publicItems.get("/api/items", async (c) => {
   if (shipsUsa) where.push("ships_usa = 1");
   if (local) where.push("local_sdtj = 1");
 
-  const sql = `SELECT * FROM items WHERE ${where.join(" AND ")} ORDER BY created_at DESC LIMIT ${MAX_LIST}`;
+  const minPrice = Number(c.req.query("minPrice"));
+  if (Number.isFinite(minPrice)) { binds.push(Math.trunc(minPrice)); where.push(`price_cents >= ?${binds.length}`); }
+  const maxPrice = Number(c.req.query("maxPrice"));
+  if (Number.isFinite(maxPrice)) { binds.push(Math.trunc(maxPrice)); where.push(`price_cents <= ?${binds.length}`); }
+
+  const ORDER: Record<string, string> = {
+    newest: "created_at DESC",
+    price_asc: "price_cents ASC",
+    price_desc: "price_cents DESC",
+  };
+  const orderBy = ORDER[c.req.query("sort") ?? "newest"] ?? ORDER.newest;
+
+  const sql = `SELECT * FROM items WHERE ${where.join(" AND ")} ORDER BY ${orderBy} LIMIT ${MAX_LIST}`;
   const { results } = await c.env.DB.prepare(sql).bind(...binds).all<ItemRow>();
   const keys = await photoKeysFor(c.env.DB, results.map((r) => r.id));
   return c.json({ items: results.map((r) => rowToItem(r, keys.get(r.id) ?? [])) });
