@@ -1,6 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { buildItemMeta, escapeHtml, injectMeta } from "../src/og";
 import type { Item } from "../src/db";
+import { env, createExecutionContext, waitOnExecutionContext } from "cloudflare:test";
+import "./setup-db";
+import app from "../src/index";
 
 const item: Item = {
   id: "abc", slug: "trek-bike", title: 'Trek "920" bike', description: "Great <condition> & ready",
@@ -42,5 +45,29 @@ describe("injectMeta", () => {
     expect(html).toContain('name="twitter:card" content="summary_large_image"');
     expect(html).toContain('property="og:description"');
     expect(html).not.toContain('content="default desc"');
+  });
+});
+
+describe("GET /item/:idOrSlug", () => {
+  it("returns HTML with the item's OG title for a real slug", async () => {
+    await env.DB.prepare(`DELETE FROM items`).run();
+    await env.DB.prepare(
+      `INSERT INTO items (id,slug,title,description,price_cents,category,ships_usa,local_sdtj,status,created_at,updated_at)
+       VALUES ('og1','my-cool-chair','My cool chair','Comfy',5000,'home',1,1,'published',1,1)`
+    ).run();
+    const ctx = createExecutionContext();
+    const res = await app.fetch(new Request("http://x/item/my-cool-chair"), env, ctx);
+    await waitOnExecutionContext(ctx);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toContain("text/html");
+    const html = await res.text();
+    expect(html).toContain('property="og:title" content="My cool chair · Frontera Finds"');
+  });
+
+  it("404s for an unknown slug", async () => {
+    const ctx = createExecutionContext();
+    const res = await app.fetch(new Request("http://x/item/does-not-exist"), env, ctx);
+    await waitOnExecutionContext(ctx);
+    expect(res.status).toBe(404);
   });
 });
