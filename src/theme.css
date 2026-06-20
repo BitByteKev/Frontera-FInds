@@ -119,7 +119,6 @@ a { color: var(--ff-agave-600); }
 .ff-badge { font: 600 11px var(--font-text); letter-spacing: 0.03em; padding: 3px 9px; border-radius: 999px; }
 .ff-badge-ship { background: var(--ff-agave-100); color: var(--ff-agave-700); }
 .ff-badge-local { background: #f4e2d6; color: var(--ff-clay); }
-.ff-sold-ribbon { background: var(--ff-ink); color: var(--ff-bone); font: 700 11px var(--font-text); letter-spacing: 0.08em; padding: 3px 9px; border-radius: 999px; }
 
 /* Sold marker: ribbon over card thumbnail + inline pill on the item page. */
 .ff-card-media { position: relative; }
