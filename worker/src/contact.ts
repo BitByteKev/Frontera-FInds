@@ -33,6 +33,8 @@ contact.post("/api/items/:id/contact", async (c) => {
     await c.env.SEND_EMAIL.send(email);
     return c.json({ ok: true });
   } catch (err) {
-    return c.json({ error: "email_failed", detail: String(err) }, 502);
+    // Public endpoint: don't leak internal error detail to buyers; log it instead.
+    console.error("contact email failed", err);
+    return c.json({ error: "email_failed" }, 502);
   }
 });
