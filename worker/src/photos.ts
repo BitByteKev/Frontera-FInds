@@ -11,6 +11,21 @@ const EXT_BY_TYPE: Record<string, string> = {
 
 export const photos = new Hono<{ Bindings: Env }>();
 photos.use("/api/admin/upload", requireAdmin);
+photos.use("/api/admin/photos", requireAdmin);
+
+// List every uploaded image (R2 keys under items/), newest first, so the admin
+// can reuse a photo instead of uploading a duplicate.
+photos.get("/api/admin/photos", async (c) => {
+  const objects: { key: string; uploaded: number }[] = [];
+  let cursor: string | undefined;
+  do {
+    const listed = await c.env.PHOTOS.list({ prefix: "items/", cursor, limit: 1000 });
+    for (const o of listed.objects) objects.push({ key: o.key, uploaded: o.uploaded.getTime() });
+    cursor = listed.truncated ? listed.cursor : undefined;
+  } while (cursor);
+  objects.sort((a, b) => b.uploaded - a.uploaded);
+  return c.json({ keys: objects.map((o) => o.key) });
+});
 
 // Serve an R2 object. ":key{.+}" captures slashes (e.g. items/abc.jpg).
 photos.get("/img/:key{.+}", async (c) => {

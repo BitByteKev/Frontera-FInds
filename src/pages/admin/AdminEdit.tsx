@@ -22,6 +22,10 @@ export default function AdminEdit() {
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [showGallery, setShowGallery] = useState(false);
+  const [galleryKeys, setGalleryKeys] = useState<string[]>([]);
+  const [galleryLoading, setGalleryLoading] = useState(false);
+
   useEffect(() => {
     if (!getToken()) { navigate("/admin"); return; }
     if (editing && id) {
@@ -42,6 +46,21 @@ export default function AdminEdit() {
       setPhotoKeys((prev) => [...prev, ...keys]);
     } catch { setError("Upload failed."); }
     finally { setUploading(false); }
+  }
+
+  async function openGallery() {
+    setShowGallery(true);
+    setGalleryLoading(true);
+    setError(null);
+    try {
+      const { keys } = await adminApi.listPhotos();
+      setGalleryKeys(keys);
+    } catch { setError("Couldn't load uploaded images."); }
+    finally { setGalleryLoading(false); }
+  }
+
+  function toggleKey(k: string) {
+    setPhotoKeys((prev) => (prev.includes(k) ? prev.filter((x) => x !== k) : [...prev, k]));
   }
 
   async function runAI() {
@@ -76,12 +95,79 @@ export default function AdminEdit() {
         <label>Photos</label>
         <input type="file" accept="image/*" multiple onChange={onFiles} />
         {uploading && <p>Uploading…</p>}
+        <div style={{ marginTop: 8 }}>
+          <button type="button" className="ff-btn ff-btn-outline" onClick={openGallery}>
+            🖼 Choose from uploaded
+          </button>
+        </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
           {photoKeys.map((k) => (
-            <img key={k} src={imgUrl(k)} alt="" style={{ width: 72, height: 72, objectFit: "cover", borderRadius: 8 }} />
+            <div key={k} style={{ position: "relative" }}>
+              <img src={imgUrl(k)} alt="" style={{ width: 72, height: 72, objectFit: "cover", borderRadius: 8 }} />
+              <button
+                type="button"
+                onClick={() => toggleKey(k)}
+                title="Remove"
+                style={{
+                  position: "absolute", top: -6, right: -6, width: 20, height: 20, borderRadius: "50%",
+                  border: "none", background: "#a50e0e", color: "#fff", cursor: "pointer", lineHeight: "20px", padding: 0,
+                }}
+              >
+                ×
+              </button>
+            </div>
           ))}
         </div>
       </div>
+
+      {showGallery && (
+        <div
+          onClick={() => setShowGallery(false)}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex",
+            alignItems: "center", justifyContent: "center", padding: 16, zIndex: 50,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#fff", borderRadius: 12, padding: 16, maxWidth: 720, width: "100%",
+              maxHeight: "80vh", overflowY: "auto",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <strong>Tap an image to add or remove it</strong>
+              <button type="button" className="ff-btn ff-btn-outline" onClick={() => setShowGallery(false)}>Done</button>
+            </div>
+            {galleryLoading && <p>Loading…</p>}
+            {!galleryLoading && galleryKeys.length === 0 && <p>No uploaded images yet.</p>}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(96px, 1fr))", gap: 8 }}>
+              {galleryKeys.map((k) => {
+                const selected = photoKeys.includes(k);
+                return (
+                  <button
+                    key={k}
+                    type="button"
+                    onClick={() => toggleKey(k)}
+                    style={{
+                      padding: 0, border: selected ? "3px solid var(--ff-green-dark)" : "1px solid var(--ff-line)",
+                      borderRadius: 8, cursor: "pointer", background: "none", position: "relative",
+                    }}
+                  >
+                    <img src={imgUrl(k)} alt="" style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 6, display: "block" }} />
+                    {selected && (
+                      <span style={{
+                        position: "absolute", top: 4, right: 4, background: "var(--ff-green-dark)", color: "#fff",
+                        borderRadius: "50%", width: 20, height: 20, lineHeight: "20px", fontSize: 13, textAlign: "center",
+                      }}>✓</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       <button className="ff-btn ff-btn-green" onClick={runAI} disabled={generating || photoKeys.length === 0}>
         {generating ? "✨ Generating…" : "✨ Generate with AI"}

@@ -5,7 +5,7 @@ import Badges from "./Badges";
 
 export default function ItemCard({ item }: { item: Item }) {
   return (
-    <Link to={`/item/${item.id}`} className="ff-card">
+    <Link to={`/item/${item.slug}`} className="ff-card">
       <img
         className="ff-card-img"
         src={item.photoKeys[0] ? imgUrl(item.photoKeys[0]) : ""}

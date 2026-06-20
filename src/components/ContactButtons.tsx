@@ -23,7 +23,7 @@ export default function ContactButtons({ item }: { item: Item }) {
 
   useEffect(() => { api.config().then(setCfg).catch(() => setCfg(null)); }, []);
 
-  const pitch = `Hi! I'm interested in "${item.title}" (${money(item.priceCents)}) on Frontera Finds: ${location.origin}/item/${item.id}`;
+  const pitch = `Hi! I'm interested in "${item.title}" (${money(item.priceCents)}) on Frontera Finds: ${location.origin}/item/${item.slug}`;
 
   async function submit(e: FormEvent) {
     e.preventDefault();

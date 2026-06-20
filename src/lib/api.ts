@@ -30,6 +30,7 @@ export const adminApi = {
       method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ password }),
     }).then((r) => json<{ token: string }>(r)),
   listAll: () => fetch("/api/admin/items", { headers: authHeaders() }).then((r) => json<{ items: Item[] }>(r)),
+  listPhotos: () => fetch("/api/admin/photos", { headers: authHeaders() }).then((r) => json<{ keys: string[] }>(r)),
   upload: (files: File[]) => {
     const fd = new FormData();
     for (const f of files) fd.append("file", f);
