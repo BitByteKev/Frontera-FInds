@@ -191,6 +191,11 @@ a { color: var(--ff-agave-600); }
 .ff-footer a { color: var(--ff-agave-300); }
 .ff-footer-tag { font: italic 400 14px var(--font-text); color: var(--ff-agave-400); margin: 0; }
 .ff-footer-meta { font: 400 13px/1.6 var(--font-text); color: var(--ff-ash); margin: 0; max-width: 560px; }
+.ff-social {
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--ff-agave-300); transition: color 0.15s, transform 0.15s;
+}
+.ff-social:hover { color: var(--ff-agave-100); transform: translateY(-1px); }
 
 /* ---- Item gallery / slideshow ---- */
 .ff-gallery { display: flex; flex-direction: column; gap: 10px; }
