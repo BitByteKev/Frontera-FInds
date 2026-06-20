@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import type { Env } from "./index";
+import { requireAdmin } from "./auth";
 
 const EXT_BY_TYPE: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -9,6 +10,7 @@ const EXT_BY_TYPE: Record<string, string> = {
 };
 
 export const photos = new Hono<{ Bindings: Env }>();
+photos.use("/api/admin/upload", requireAdmin);
 
 // Serve an R2 object. ":key{.+}" captures slashes (e.g. items/abc.jpg).
 photos.get("/img/:key{.+}", async (c) => {

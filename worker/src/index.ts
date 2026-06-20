@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { publicItems } from "./items";
+import { publicItems, adminItems } from "./items";
 import { photos } from "./photos";
 import { auth } from "./auth";
 
@@ -20,6 +20,7 @@ const app = new Hono<{ Bindings: Env }>();
 
 app.get("/api/health", (c) => c.json({ ok: true }));
 app.route("/", publicItems);
+app.route("/", adminItems);
 app.route("/", photos);
 app.route("/", auth);
 

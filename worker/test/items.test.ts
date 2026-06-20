@@ -2,6 +2,7 @@ import { env, createExecutionContext, waitOnExecutionContext } from "cloudflare:
 import { describe, it, expect } from "vitest";
 import "./setup-db";
 import app from "../src/index";
+import { signToken } from "../src/auth";
 
 async function seed() {
   await env.DB.prepare(`DELETE FROM item_photos`).run();
@@ -115,5 +116,75 @@ describe("health", () => {
     await waitOnExecutionContext(ctx);
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
+  });
+});
+
+async function adminHeaders() {
+  const token = await signToken("test-password", Date.now() + 60_000);
+  return { authorization: `Bearer ${token}`, "content-type": "application/json" };
+}
+
+describe("admin item CRUD", () => {
+  it("rejects create without a token", async () => {
+    const ctx = createExecutionContext();
+    const res = await app.fetch(
+      new Request("http://x/api/admin/items", { method: "POST", body: "{}" }),
+      env, ctx
+    );
+    await waitOnExecutionContext(ctx);
+    expect(res.status).toBe(401);
+  });
+
+  it("creates, lists, marks sold, and deletes", async () => {
+    const headers = await adminHeaders();
+
+    let ctx = createExecutionContext();
+    let res = await app.fetch(new Request("http://x/api/admin/items", {
+      method: "POST", headers,
+      body: JSON.stringify({
+        title: "Lamp", description: "A lamp", priceCents: 2500,
+        category: "home", shipsUsa: true, localSdtj: true,
+        status: "published", photoKeys: ["items/lamp.jpg"],
+      }),
+    }), env, ctx);
+    await waitOnExecutionContext(ctx);
+    expect(res.status).toBe(200);
+    const { id } = await res.json<{ id: string }>();
+    expect(id).toBeTruthy();
+
+    ctx = createExecutionContext();
+    res = await app.fetch(new Request("http://x/api/items"), env, ctx);
+    await waitOnExecutionContext(ctx);
+    const list = await res.json<{ items: any[] }>();
+    const created = list.items.find((i) => i.id === id);
+    expect(created.photoKeys).toEqual(["items/lamp.jpg"]);
+
+    ctx = createExecutionContext();
+    res = await app.fetch(new Request(`http://x/api/admin/items/${id}`, {
+      method: "PATCH", headers, body: JSON.stringify({ status: "sold" }),
+    }), env, ctx);
+    await waitOnExecutionContext(ctx);
+    expect(res.status).toBe(200);
+
+    ctx = createExecutionContext();
+    res = await app.fetch(new Request(`http://x/api/admin/items/${id}`, {
+      method: "DELETE", headers,
+    }), env, ctx);
+    await waitOnExecutionContext(ctx);
+    expect(res.status).toBe(200);
+
+    ctx = createExecutionContext();
+    res = await app.fetch(new Request(`http://x/api/items/${id}`), env, ctx);
+    await waitOnExecutionContext(ctx);
+    expect(res.status).toBe(404);
+  });
+
+  it("lists all statuses for admin", async () => {
+    const headers = await adminHeaders();
+    const ctx = createExecutionContext();
+    const res = await app.fetch(new Request("http://x/api/admin/items", { headers }), env, ctx);
+    await waitOnExecutionContext(ctx);
+    expect(res.status).toBe(200);
+    expect(Array.isArray((await res.json<{ items: any[] }>()).items)).toBe(true);
   });
 });
