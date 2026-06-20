@@ -20,19 +20,36 @@
   --ff-line: #e0d6c2;
   --ff-muted: #5c665e;
   --ff-card: #ffffff;
+  /* Semantic surface tokens — these flip in dark mode. (--ff-bone / --ff-ink
+     stay fixed because they double as the light text on the green header,
+     hero, and footer, which look the same in both themes.) */
+  --ff-page: var(--ff-bone);
+  --ff-text: var(--ff-ink);
+  --ff-accent: var(--ff-agave-700);
   --font-display: "Space Grotesk", system-ui, sans-serif;
   --font-text: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
   color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --ff-page: #141b17;
+  --ff-card: #1d2620;
+  --ff-line: #2d3a31;
+  --ff-muted: #9bab9f;
+  --ff-sand: #29332b;
+  --ff-text: #eaf2ec;
+  --ff-accent: #5bd074;
+  color-scheme: dark;
 }
 * { box-sizing: border-box; }
 body {
   margin: 0;
   font-family: var(--font-text);
-  background: var(--ff-bone);
-  color: var(--ff-ink);
+  background: var(--ff-page);
+  color: var(--ff-text);
 }
 ::selection { background: var(--ff-clay); color: var(--ff-bone); }
-h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.015em; color: var(--ff-ink); }
+h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.015em; color: var(--ff-text); }
 a { color: var(--ff-agave-600); }
 
 /* ---- Header ---- */
@@ -94,8 +111,8 @@ a { color: var(--ff-agave-600); }
 .ff-card:hover { border-color: var(--ff-agave-400); box-shadow: 0 8px 24px rgba(20, 32, 26, 0.08); transform: translateY(-2px); }
 .ff-card-img { aspect-ratio: 1 / 1; background: var(--ff-sand); object-fit: cover; width: 100%; }
 .ff-card-body { padding: 12px 14px; }
-.ff-card-title { font: 500 14px/1.3 var(--font-text); color: var(--ff-ink); }
-.ff-price { font: 600 17px var(--font-display); color: var(--ff-agave-700); margin-top: 5px; letter-spacing: 0.005em; }
+.ff-card-title { font: 500 14px/1.3 var(--font-text); color: var(--ff-text); }
+.ff-price { font: 600 17px var(--font-display); color: var(--ff-accent); margin-top: 5px; letter-spacing: 0.005em; }
 
 /* ---- Badges ---- */
 .ff-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
@@ -113,16 +130,27 @@ a { color: var(--ff-agave-600); }
 }
 .ff-btn-green { background: var(--ff-agave-700); color: var(--ff-bone); }
 .ff-btn-green:hover { background: var(--ff-agave-600); }
-.ff-btn-outline { background: #fff; color: var(--ff-agave-700); border: 1px solid var(--ff-agave-700); }
+.ff-btn-outline { background: var(--ff-card); color: var(--ff-accent); border: 1px solid var(--ff-accent); }
 .ff-btn-outline:hover { background: var(--ff-agave-100); }
+[data-theme="dark"] .ff-btn-outline:hover { background: rgba(91, 208, 116, 0.12); }
 .ff-btn:disabled { opacity: 0.5; cursor: default; }
+
+/* ---- Theme toggle (lives in the green header) ---- */
+.ff-theme-toggle {
+  flex: none; width: 38px; height: 38px; border-radius: 50%;
+  border: 1px solid rgba(143, 230, 163, 0.4); background: transparent;
+  color: var(--ff-bone); font-size: 17px; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.ff-theme-toggle:hover { background: rgba(255, 255, 255, 0.1); }
 
 /* ---- Forms ---- */
 .ff-field { display: block; margin: 12px 0; }
 .ff-field label { display: block; font: 500 13px var(--font-text); color: var(--ff-muted); margin-bottom: 5px; }
 .ff-field input, .ff-field textarea, .ff-field select {
   width: 100%; padding: 10px 12px; border: 1px solid var(--ff-line); border-radius: 8px;
-  font-size: 15px; font-family: var(--font-text); background: #fff; color: var(--ff-ink);
+  font-size: 15px; font-family: var(--font-text); background: var(--ff-card); color: var(--ff-text);
 }
 .ff-field input:focus, .ff-field textarea:focus, .ff-field select:focus {
   outline: none; border-color: var(--ff-agave-600); box-shadow: 0 0 0 3px rgba(30, 138, 63, 0.12);

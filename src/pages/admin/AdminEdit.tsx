@@ -131,8 +131,8 @@ export default function AdminEdit() {
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              background: "#fff", borderRadius: 12, padding: 16, maxWidth: 720, width: "100%",
-              maxHeight: "80vh", overflowY: "auto",
+              background: "var(--ff-card)", color: "var(--ff-text)", borderRadius: 12, padding: 16,
+              maxWidth: 720, width: "100%", maxHeight: "80vh", overflowY: "auto",
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
