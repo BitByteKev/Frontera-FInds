@@ -49,10 +49,33 @@ Then in `wrangler.toml`:
 `destination_address` (the owner's email) is a **verified** destination, or the
 contact form's send will fail (buyers are then told to use WhatsApp/SMS).
 
-## Deploy
+## Deploy (Vercel frontend + Cloudflare Worker backend)
+
+The React frontend is hosted on **Vercel**; the API/photos run on a **Cloudflare
+Worker**. The frontend uses relative `/api` and `/img` paths, and `vercel.json`
+proxies those to the Worker — so there's no CORS and no per-environment API URL
+in the frontend code. Order matters:
+
 ```bash
-npm run deploy   # builds the frontend, then `wrangler deploy`
+# 1. Cloudflare backend — create resources, then deploy the Worker
+wrangler r2 bucket create frontera-finds-photos        # needs R2 enabled in the dashboard first
+wrangler d1 create frontera_finds                      # paste the database_id into wrangler.toml
+npm run db:apply                                       # apply migrations to the REMOTE D1
+wrangler secret put ANTHROPIC_API_KEY                  # production AI key
+wrangler secret put ADMIN_PASSWORD                     # production admin password
+wrangler deploy --config wrangler.toml                 # → prints the Worker URL (…workers.dev)
+
+# 2. Wire Vercel to the Worker
+#    Edit vercel.json: replace REPLACE-WITH-YOUR-WORKER-URL.workers.dev with the
+#    Worker URL printed above (keep the /api/:path* and /img/:path* suffixes).
+git commit -am "chore: point vercel proxy at the worker" && git push   # Vercel auto-redeploys
 ```
+
+Notes:
+- The **deployed** admin password is the `ADMIN_PASSWORD` secret you set on the
+  Worker — not the local `.dev.vars` value.
+- The Worker only serves `/api/*` and `/img/*`; Vercel serves the SPA and proxies
+  those two paths to the Worker.
 
 ## Architecture notes
 - Public read endpoints (`/api/items`, `/api/items/:id`, `/api/config`,
