@@ -26,6 +26,28 @@ describe("POST /api/items/:id/contact", () => {
     expect(send).toHaveBeenCalledOnce();
   });
 
+  it("includes a buyer Reply-To email without throwing (200)", async () => {
+    const now = Date.now();
+    await env.DB.prepare(
+      `INSERT OR REPLACE INTO items (id,title,description,price_cents,category,ships_usa,local_sdtj,status,created_at,updated_at)
+       VALUES ('c2','Bike','',9000,'bikes',1,1,'published',?1,?1)`
+    ).bind(now).run();
+
+    const send = vi.fn(async () => {});
+    const testEnv = { ...env, SEND_EMAIL: { send } } as unknown as typeof env;
+
+    const ctx = createExecutionContext();
+    const res = await app.fetch(new Request("http://x/api/items/c2/contact", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name: "Buyer", message: "Interested!", replyTo: "buyer@example.com" }),
+    }), testEnv, ctx);
+    await waitOnExecutionContext(ctx);
+
+    expect(res.status).toBe(200);
+    expect(send).toHaveBeenCalledOnce();
+  });
+
   it("400s a blank message", async () => {
     const ctx = createExecutionContext();
     const res = await app.fetch(new Request("http://x/api/items/c1/contact", {
