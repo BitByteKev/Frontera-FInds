@@ -21,7 +21,7 @@ describe("buildItemMeta", () => {
   });
   it("falls back to the default OG image when there are no photos", () => {
     const m = buildItemMeta({ ...item, photoKeys: [] }, "https://fronterafinds.com");
-    expect(m.image).toBe("https://fronterafinds.com/og-default.png");
+    expect(m.image).toBe("");
   });
 });
 
@@ -45,6 +45,12 @@ describe("injectMeta", () => {
     expect(html).toContain('name="twitter:card" content="summary_large_image"');
     expect(html).toContain('property="og:description"');
     expect(html).not.toContain('content="default desc"');
+  });
+
+  it("omits image tags when the item has no photo", async () => {
+    const html = await injectMeta(SHELL, { ...item, photoKeys: [] }, "https://fronterafinds.com");
+    expect(html).not.toContain("og:image");
+    expect(html).toContain('property="og:title"');
   });
 });
 

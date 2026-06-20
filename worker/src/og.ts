@@ -32,7 +32,7 @@ export function buildItemMeta(item: Item, siteUrl: string): ItemMeta {
     title: `${item.title} · Frontera Finds`,
     description: desc,
     url: `${base}/item/${item.slug || item.id}`,
-    image: item.photoKeys[0] ? `${base}/img/${item.photoKeys[0]}` : `${base}/og-default.png`,
+    image: item.photoKeys[0] ? `${base}/img/${item.photoKeys[0]}` : "",
   };
 }
 
@@ -41,16 +41,19 @@ export function buildItemMeta(item: Item, siteUrl: string): ItemMeta {
 // tags to <head>. Returns the rewritten HTML as a string.
 export async function injectMeta(shellHtml: string, item: Item, siteUrl: string): Promise<string> {
   const m = buildItemMeta(item, siteUrl);
+  const imageTags = m.image
+    ? `<meta property="og:image" content="${escapeHtml(m.image)}" />` +
+      `<meta name="twitter:image" content="${escapeHtml(m.image)}" />`
+    : "";
   const tags =
     `<meta property="og:type" content="product" />` +
     `<meta property="og:title" content="${escapeHtml(m.title)}" />` +
     `<meta property="og:description" content="${escapeHtml(m.description)}" />` +
     `<meta property="og:url" content="${escapeHtml(m.url)}" />` +
-    `<meta property="og:image" content="${escapeHtml(m.image)}" />` +
     `<meta name="twitter:card" content="summary_large_image" />` +
     `<meta name="twitter:title" content="${escapeHtml(m.title)}" />` +
     `<meta name="twitter:description" content="${escapeHtml(m.description)}" />` +
-    `<meta name="twitter:image" content="${escapeHtml(m.image)}" />`;
+    imageTags;
 
   const rewritten = new HTMLRewriter()
     .on("title", { element(el) { el.setInnerContent(escapeHtml(m.title), { html: true }); } })
@@ -93,6 +96,10 @@ og.get("/item/:idOrSlug", async (c) => {
     html = await injectMeta(shell, item, siteUrl);
   } else {
     const m = buildItemMeta(item, siteUrl);
+    const imageTags = m.image
+      ? `<meta property="og:image" content="${escapeHtml(m.image)}" />` +
+        `<meta name="twitter:image" content="${escapeHtml(m.image)}" />`
+      : "";
     html =
       `<!doctype html><html lang="en"><head><meta charset="utf-8" />` +
       `<title>${escapeHtml(m.title)}</title>` +
@@ -100,9 +107,8 @@ og.get("/item/:idOrSlug", async (c) => {
       `<meta property="og:title" content="${escapeHtml(m.title)}" />` +
       `<meta property="og:description" content="${escapeHtml(m.description)}" />` +
       `<meta property="og:url" content="${escapeHtml(m.url)}" />` +
-      `<meta property="og:image" content="${escapeHtml(m.image)}" />` +
       `<meta name="twitter:card" content="summary_large_image" />` +
-      `<meta name="twitter:image" content="${escapeHtml(m.image)}" />` +
+      imageTags +
       `</head><body><a href="${escapeHtml(m.url)}">${escapeHtml(item.title)}</a></body></html>`;
   }
   return c.html(html, 200, { "cache-control": "public, max-age=300" });
