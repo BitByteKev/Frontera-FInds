@@ -1,6 +1,7 @@
 import { Link, Route, Routes, useNavigate, useSearchParams } from "react-router-dom";
 import { useState } from "react";
 import AgaveMark from "./components/AgaveMark";
+import ThemeToggle from "./components/ThemeToggle";
 import Home from "./pages/Home";
 import ItemPage from "./pages/ItemPage";
 import About from "./pages/About";
@@ -27,6 +28,7 @@ function Header() {
       >
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar / Search items…" />
       </form>
+      <ThemeToggle />
       <Link to="/admin" className="ff-sell">Sell</Link>
     </header>
   );

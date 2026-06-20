@@ -1,5 +1,6 @@
 export interface Item {
   id: string;
+  slug: string;
   title: string;
   description: string;
   priceCents: number;

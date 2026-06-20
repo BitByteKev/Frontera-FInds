@@ -22,6 +22,7 @@ export default defineWorkersConfig(async () => {
               PUBLIC_SMS: "+16199448759",
               PUBLIC_INSTAGRAM_URL: "https://instagram.com/test",
               OWNER_EMAIL: "owner@example.com",
+              PUBLIC_SITE_URL: "https://fronterafinds.com",
             },
           },
         },

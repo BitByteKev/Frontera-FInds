@@ -83,6 +83,54 @@ describe("GET /api/items", () => {
   });
 });
 
+describe("GET /api/items sort + price", () => {
+  async function seedPriced() {
+    await env.DB.prepare(`DELETE FROM item_photos`).run();
+    await env.DB.prepare(`DELETE FROM items`).run();
+    const now = Date.now();
+    await env.DB.prepare(
+      `INSERT INTO items (id,title,description,price_cents,category,ships_usa,local_sdtj,status,created_at,updated_at)
+       VALUES ('cheap','Cheap mug','',500,'misc',1,1,'published',?1,?1)`
+    ).bind(now).run();
+    await env.DB.prepare(
+      `INSERT INTO items (id,title,description,price_cents,category,ships_usa,local_sdtj,status,created_at,updated_at)
+       VALUES ('mid','Mid lamp','',5000,'misc',1,1,'published',?1,?1)`
+    ).bind(now + 1).run();
+    await env.DB.prepare(
+      `INSERT INTO items (id,title,description,price_cents,category,ships_usa,local_sdtj,status,created_at,updated_at)
+       VALUES ('pricey','Pricey bike','',20000,'misc',1,1,'published',?1,?1)`
+    ).bind(now + 2).run();
+  }
+  async function ids(qs: string) {
+    const ctx = createExecutionContext();
+    const res = await app.fetch(new Request(`http://x/api/items?${qs}`), env, ctx);
+    await waitOnExecutionContext(ctx);
+    const body = await res.json<{ items: any[] }>();
+    return body.items.map((i) => i.id);
+  }
+
+  it("sort=price_asc orders ascending by price", async () => {
+    await seedPriced();
+    expect(await ids("sort=price_asc")).toEqual(["cheap", "mid", "pricey"]);
+  });
+  it("sort=price_desc orders descending by price", async () => {
+    await seedPriced();
+    expect(await ids("sort=price_desc")).toEqual(["pricey", "mid", "cheap"]);
+  });
+  it("unknown sort falls back to newest (created_at desc)", async () => {
+    await seedPriced();
+    expect(await ids("sort=bogus")).toEqual(["pricey", "mid", "cheap"]);
+  });
+  it("minPrice/maxPrice bound the results (cents)", async () => {
+    await seedPriced();
+    expect(await ids("minPrice=1000&maxPrice=10000")).toEqual(["mid"]);
+  });
+  it("non-numeric price bounds are ignored", async () => {
+    await seedPriced();
+    expect((await ids("minPrice=abc")).sort()).toEqual(["cheap", "mid", "pricey"]);
+  });
+});
+
 describe("GET /api/items/:id", () => {
   it("returns a single item", async () => {
     await seed();

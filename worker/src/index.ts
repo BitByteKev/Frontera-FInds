@@ -4,6 +4,7 @@ import { photos } from "./photos";
 import { auth } from "./auth";
 import { generate } from "./generate";
 import { contact } from "./contact";
+import { og } from "./og";
 
 export interface Env {
   DB: D1Database;
@@ -16,6 +17,7 @@ export interface Env {
   PUBLIC_SMS: string;
   PUBLIC_INSTAGRAM_URL: string;
   OWNER_EMAIL: string;
+  PUBLIC_SITE_URL: string;
 }
 
 const app = new Hono<{ Bindings: Env }>();
@@ -34,5 +36,6 @@ app.route("/", photos);
 app.route("/", auth);
 app.route("/", generate);
 app.route("/", contact);
+app.route("/", og);
 
 export default app;

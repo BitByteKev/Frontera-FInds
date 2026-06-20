@@ -1,5 +1,6 @@
 export interface ItemRow {
   id: string;
+  slug: string | null;
   title: string;
   description: string;
   price_cents: number;
@@ -13,6 +14,7 @@ export interface ItemRow {
 
 export interface Item {
   id: string;
+  slug: string;
   title: string;
   description: string;
   priceCents: number;
@@ -28,6 +30,7 @@ export interface Item {
 export function rowToItem(row: ItemRow, photoKeys: string[]): Item {
   return {
     id: row.id,
+    slug: row.slug ?? row.id, // fall back to id for rows created before slugs existed
     title: row.title,
     description: row.description,
     priceCents: row.price_cents,

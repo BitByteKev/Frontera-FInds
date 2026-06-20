@@ -9,6 +9,7 @@ PUBLIC_WHATSAPP = "+16199448759"
 PUBLIC_SMS = "+16199448759"
 PUBLIC_INSTAGRAM_URL = "https://instagram.com/sdhaulinganddemo"
 OWNER_EMAIL = "kevincromley2020@gmail.com"
+PUBLIC_SITE_URL = "https://fronterafinds.com"
 
 [[d1_databases]]
 binding = "DB"

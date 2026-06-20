@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import type { Env } from "./index";
 import { rowToItem, type ItemRow } from "./db";
 import { requireAdmin } from "./auth";
+import { uniqueSlug } from "./slug";
 
 const MAX_LIST = 200;
 
@@ -41,19 +42,34 @@ publicItems.get("/api/items", async (c) => {
   if (shipsUsa) where.push("ships_usa = 1");
   if (local) where.push("local_sdtj = 1");
 
-  const sql = `SELECT * FROM items WHERE ${where.join(" AND ")} ORDER BY created_at DESC LIMIT ${MAX_LIST}`;
+  const minPrice = Number(c.req.query("minPrice"));
+  if (Number.isFinite(minPrice)) { binds.push(Math.trunc(minPrice)); where.push(`price_cents >= ?${binds.length}`); }
+  const maxPrice = Number(c.req.query("maxPrice"));
+  if (Number.isFinite(maxPrice)) { binds.push(Math.trunc(maxPrice)); where.push(`price_cents <= ?${binds.length}`); }
+
+  const ORDER: Record<string, string> = {
+    newest: "created_at DESC",
+    price_asc: "price_cents ASC",
+    price_desc: "price_cents DESC",
+  };
+  const orderBy = ORDER[c.req.query("sort") ?? "newest"] ?? ORDER.newest;
+
+  const sql = `SELECT * FROM items WHERE ${where.join(" AND ")} ORDER BY ${orderBy} LIMIT ${MAX_LIST}`;
   const { results } = await c.env.DB.prepare(sql).bind(...binds).all<ItemRow>();
   const keys = await photoKeysFor(c.env.DB, results.map((r) => r.id));
   return c.json({ items: results.map((r) => rowToItem(r, keys.get(r.id) ?? [])) });
 });
 
-publicItems.get("/api/items/:id", async (c) => {
-  const id = c.req.param("id");
-  const row = await c.env.DB.prepare(`SELECT * FROM items WHERE id = ?1`).bind(id).first<ItemRow>();
+publicItems.get("/api/items/:idOrSlug", async (c) => {
+  const idOrSlug = c.req.param("idOrSlug");
+  const row = await c.env.DB
+    .prepare(`SELECT * FROM items WHERE slug = ?1 OR id = ?1`)
+    .bind(idOrSlug)
+    .first<ItemRow>();
   if (!row) return c.json({ error: "not_found" }, 404);
   if (row.status === "hidden") return c.json({ error: "not_found" }, 404);
-  const keys = await photoKeysFor(c.env.DB, [id]);
-  return c.json({ item: rowToItem(row, keys.get(id) ?? []) });
+  const keys = await photoKeysFor(c.env.DB, [row.id]);
+  return c.json({ item: rowToItem(row, keys.get(row.id) ?? []) });
 });
 
 interface ItemInput {
@@ -93,16 +109,17 @@ adminItems.post("/api/admin/items", async (c) => {
   const b = await c.req.json<ItemInput>();
   if (!b.title || !b.title.trim()) return c.json({ error: "title_required" }, 400);
   const id = crypto.randomUUID();
+  const slug = await uniqueSlug(c.env.DB, b.title.trim());
   const now = Date.now();
   await c.env.DB.prepare(
-    `INSERT INTO items (id,title,description,price_cents,category,ships_usa,local_sdtj,status,created_at,updated_at)
-     VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)`
+    `INSERT INTO items (id,slug,title,description,price_cents,category,ships_usa,local_sdtj,status,created_at,updated_at)
+     VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)`
   ).bind(
-    id, b.title.trim(), b.description ?? "", b.priceCents ?? 0, b.category ?? "misc",
+    id, slug, b.title.trim(), b.description ?? "", b.priceCents ?? 0, b.category ?? "misc",
     b.shipsUsa === false ? 0 : 1, b.localSdtj === false ? 0 : 1, b.status ?? "published", now, now
   ).run();
   await replacePhotos(c.env.DB, id, b.photoKeys ?? []);
-  return c.json({ id });
+  return c.json({ id, slug });
 });
 
 adminItems.patch("/api/admin/items/:id", async (c) => {
@@ -110,8 +127,10 @@ adminItems.patch("/api/admin/items/:id", async (c) => {
   const existing = await c.env.DB.prepare(`SELECT * FROM items WHERE id = ?1`).bind(id).first<ItemRow>();
   if (!existing) return c.json({ error: "not_found" }, 404);
   const b = await c.req.json<ItemInput>();
+  // Slug is stable once set; only generate one for legacy rows that never had it.
+  const slug = existing.slug ?? (await uniqueSlug(c.env.DB, b.title?.trim() ?? existing.title));
   await c.env.DB.prepare(
-    `UPDATE items SET title=?2, description=?3, price_cents=?4, category=?5,
+    `UPDATE items SET slug=?10, title=?2, description=?3, price_cents=?4, category=?5,
        ships_usa=?6, local_sdtj=?7, status=?8, updated_at=?9 WHERE id=?1`
   ).bind(
     id,
@@ -122,7 +141,8 @@ adminItems.patch("/api/admin/items/:id", async (c) => {
     b.shipsUsa === undefined ? existing.ships_usa : b.shipsUsa ? 1 : 0,
     b.localSdtj === undefined ? existing.local_sdtj : b.localSdtj ? 1 : 0,
     b.status ?? existing.status,
-    Date.now()
+    Date.now(),
+    slug
   ).run();
   if (b.photoKeys) await replacePhotos(c.env.DB, id, b.photoKeys);
   return c.json({ ok: true });

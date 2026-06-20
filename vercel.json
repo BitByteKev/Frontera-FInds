@@ -12,6 +12,10 @@
       "destination": "https://frontera-finds.kevincromley2020.workers.dev/img/:path*"
     },
     {
+      "source": "/item/:path*",
+      "destination": "https://frontera-finds.kevincromley2020.workers.dev/item/:path*"
+    },
+    {
       "source": "/:path*",
       "destination": "/index.html"
     }

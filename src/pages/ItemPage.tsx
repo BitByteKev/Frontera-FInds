@@ -23,7 +23,10 @@ export default function ItemPage() {
   return (
     <main className="ff-wrap" style={{ maxWidth: 760 }}>
       <Gallery photoKeys={item.photoKeys} title={item.title} />
-      <h1 style={{ marginBottom: 4 }}>{item.title}</h1>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4, flexWrap: "wrap" }}>
+        <h1 style={{ margin: 0 }}>{item.title}</h1>
+        {item.status === "sold" && <span className="ff-badge-sold">SOLD</span>}
+      </div>
       <div className="ff-price" style={{ fontSize: 24 }}>{money(item.priceCents)}</div>
       <Badges item={item} />
       <p style={{ whiteSpace: "pre-wrap", lineHeight: 1.5 }}>{item.description}</p>
