@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:worker": "vitest run --config worker/vitest.config.ts",
-    "db:apply": "wrangler d1 migrations apply frontera_finds --config wrangler.toml",
+    "db:apply": "wrangler d1 migrations apply frontera_finds --remote --config wrangler.toml",
     "db:apply:local": "wrangler d1 migrations apply frontera_finds --local --config wrangler.toml",
     "deploy": "npm run build && wrangler deploy --config wrangler.toml"
   },
