@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { publicItems } from "./items";
 import { photos } from "./photos";
+import { auth } from "./auth";
 
 export interface Env {
   DB: D1Database;
@@ -20,5 +21,6 @@ const app = new Hono<{ Bindings: Env }>();
 app.get("/api/health", (c) => c.json({ ok: true }));
 app.route("/", publicItems);
 app.route("/", photos);
+app.route("/", auth);
 
 export default app;
