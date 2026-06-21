@@ -12,6 +12,7 @@ export default function Home() {
 
   const ships = params.get("ships") === "1";
   const local = params.get("local") === "1";
+  const hideSold = params.get("hideSold") === "1";
   const q = params.get("q") ?? "";
   const sort = params.get("sort") ?? "newest";
   const minPrice = params.get("minPrice") ?? "";
@@ -19,14 +20,15 @@ export default function Home() {
 
   useEffect(() => {
     setLoading(true);
-    // Build the API query from the URL: always include sold (shown with a badge),
-    // and convert the dollar price inputs to cents for the API.
+    // Build the API query from the URL: by default include sold (shown with a
+    // badge) unless the user opts to hide them, and convert the dollar price
+    // inputs to cents for the API.
     const api1 = new URLSearchParams();
     for (const k of ["q", "category", "ships", "local", "sort"]) {
       const v = params.get(k);
       if (v) api1.set(k, v);
     }
-    api1.set("sold", "1");
+    if (params.get("hideSold") !== "1") api1.set("sold", "1");
     const min = Number(params.get("minPrice"));
     if (params.get("minPrice") && Number.isFinite(min)) api1.set("minPrice", String(Math.round(min * 100)));
     const max = Number(params.get("maxPrice"));
@@ -46,7 +48,7 @@ export default function Home() {
     else next.delete(key);
     setParams(next, { replace: true });
   }
-  function toggle(key: "ships" | "local") {
+  function toggle(key: "ships" | "local" | "hideSold") {
     setParam(key, params.get(key) === "1" ? "" : "1");
   }
 
@@ -87,6 +89,9 @@ export default function Home() {
         </button>
         <button className={local ? "ff-btn ff-btn-green" : "ff-btn ff-btn-outline"} onClick={() => toggle("local")}>
           Local pickup / delivery
+        </button>
+        <button className={hideSold ? "ff-btn ff-btn-green" : "ff-btn ff-btn-outline"} onClick={() => toggle("hideSold")}>
+          Hide sold
         </button>
       </div>
 
