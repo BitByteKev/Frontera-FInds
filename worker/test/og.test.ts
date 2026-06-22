@@ -9,6 +9,7 @@ const item: Item = {
   id: "abc", slug: "trek-bike", title: 'Trek "920" bike', description: "Great <condition> & ready",
   priceCents: 12000, category: "bikes", shipsUsa: true, localSdtj: true,
   status: "published", createdAt: 1, updatedAt: 1, photoKeys: ["items/abc-a.jpg"],
+  titleEn: null, titleEs: null, descriptionEn: null, descriptionEs: null,
 };
 
 describe("buildItemMeta", () => {
