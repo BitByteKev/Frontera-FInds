@@ -10,6 +10,10 @@ export interface ItemRow {
   status: string;
   created_at: number;
   updated_at: number;
+  title_en: string | null;
+  title_es: string | null;
+  description_en: string | null;
+  description_es: string | null;
 }
 
 export interface Item {
@@ -25,6 +29,10 @@ export interface Item {
   createdAt: number;
   updatedAt: number;
   photoKeys: string[];
+  titleEn: string | null;
+  titleEs: string | null;
+  descriptionEn: string | null;
+  descriptionEs: string | null;
 }
 
 export function rowToItem(row: ItemRow, photoKeys: string[]): Item {
@@ -41,5 +49,9 @@ export function rowToItem(row: ItemRow, photoKeys: string[]): Item {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     photoKeys,
+    titleEn: row.title_en ?? null,
+    titleEs: row.title_es ?? null,
+    descriptionEn: row.description_en ?? null,
+    descriptionEs: row.description_es ?? null,
   };
 }
