@@ -3,6 +3,7 @@ import type { FormEvent } from "react";
 import { api } from "../lib/api";
 import type { Item, SiteConfig } from "../lib/types";
 import { money } from "../lib/format";
+import { useLang } from "../i18n/LanguageContext";
 
 function waLink(phone: string, text: string): string {
   const digits = phone.replace(/[^\d]/g, "");
@@ -13,17 +14,22 @@ function smsLink(phone: string, text: string): string {
 }
 
 export default function ContactButtons({ item }: { item: Item }) {
+  const { t } = useLang();
   const [cfg, setCfg] = useState<SiteConfig | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
   const [replyTo, setReplyTo] = useState("");
-  const [message, setMessage] = useState(`Hi! Is "${item.title}" still available?`);
+  const [message, setMessage] = useState(t("contact.defaultMessage", { title: item.title }));
   const [sent, setSent] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => { api.config().then(setCfg).catch(() => setCfg(null)); }, []);
 
-  const pitch = `Hi! I'm interested in "${item.title}" (${money(item.priceCents)}) on Frontera Finds: ${location.origin}/item/${item.slug}`;
+  const pitch = t("contact.pitch", {
+    title: item.title,
+    price: money(item.priceCents),
+    url: `${location.origin}/item/${item.slug}`,
+  });
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -32,7 +38,7 @@ export default function ContactButtons({ item }: { item: Item }) {
       await api.contact(item.id, { name, message, replyTo });
       setSent(true);
     } catch (e2) {
-      setErr("Couldn't send — please try WhatsApp or text instead.");
+      setErr(t("contact.sendError"));
     }
   }
 
@@ -41,39 +47,39 @@ export default function ContactButtons({ item }: { item: Item }) {
       {cfg && (
         <>
           <a className="ff-btn ff-btn-green" href={waLink(cfg.whatsapp, pitch)} target="_blank" rel="noreferrer">
-            WhatsApp
+            {t("contact.whatsapp")}
           </a>
-          <a className="ff-btn ff-btn-outline" href={smsLink(cfg.sms, pitch)}>Text / SMS</a>
+          <a className="ff-btn ff-btn-outline" href={smsLink(cfg.sms, pitch)}>{t("contact.sms")}</a>
           {cfg.instagramUrl && (
             <a className="ff-btn ff-btn-outline" href={cfg.instagramUrl} target="_blank" rel="noreferrer">
-              Instagram DM
+              {t("contact.instagramDm")}
             </a>
           )}
         </>
       )}
       <button className="ff-btn ff-btn-outline" onClick={() => setShowForm((s) => !s)}>
-        Message the seller
+        {t("contact.messageSeller")}
       </button>
 
       {showForm && !sent && (
         <form onSubmit={submit} style={{ border: "1px solid var(--ff-line)", borderRadius: 10, padding: 12 }}>
           <div className="ff-field">
-            <label>Your name</label>
+            <label>{t("contact.yourName")}</label>
             <input value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div className="ff-field">
-            <label>Your email (so the seller can reply)</label>
+            <label>{t("contact.yourEmail")}</label>
             <input value={replyTo} onChange={(e) => setReplyTo(e.target.value)} type="email" />
           </div>
           <div className="ff-field">
-            <label>Message</label>
+            <label>{t("contact.messageLabel")}</label>
             <textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={3} />
           </div>
           {err && <p style={{ color: "#a50e0e" }}>{err}</p>}
-          <button className="ff-btn ff-btn-green" type="submit">Send</button>
+          <button className="ff-btn ff-btn-green" type="submit">{t("contact.send")}</button>
         </form>
       )}
-      {sent && <p style={{ color: "var(--ff-green-dark)" }}>Sent! The seller will get back to you.</p>}
+      {sent && <p style={{ color: "var(--ff-green-dark)" }}>{t("contact.sent")}</p>}
     </div>
   );
 }
