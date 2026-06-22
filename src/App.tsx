@@ -2,6 +2,8 @@ import { Link, Route, Routes, useNavigate, useSearchParams } from "react-router-
 import { useState } from "react";
 import AgaveMark from "./components/AgaveMark";
 import ThemeToggle from "./components/ThemeToggle";
+import LanguageToggle from "./components/LanguageToggle";
+import { useLang } from "./i18n/LanguageContext";
 import Home from "./pages/Home";
 import ItemPage from "./pages/ItemPage";
 import About from "./pages/About";
@@ -11,11 +13,12 @@ import AdminEdit from "./pages/admin/AdminEdit";
 
 function Header() {
   const navigate = useNavigate();
+  const { t } = useLang();
   const [params] = useSearchParams();
   const [q, setQ] = useState(params.get("q") ?? "");
   return (
     <header className="ff-header">
-      <Link to="/" className="ff-logo" aria-label="Frontera Finds — home">
+      <Link to="/" className="ff-logo" aria-label={t("nav.logoAria")}>
         <AgaveMark size={34} outer="#8FE6A3" inner="#5BD074" core="#E2A33C" />
         <span className="ff-wordmark">
           <span className="ff-wordmark-main">FRONTERA</span>
@@ -26,15 +29,17 @@ function Header() {
         className="ff-search"
         onSubmit={(e) => { e.preventDefault(); navigate(`/?q=${encodeURIComponent(q)}`); }}
       >
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar / Search items…" />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("header.searchPlaceholder")} />
       </form>
+      <LanguageToggle />
       <ThemeToggle />
-      <Link to="/admin" className="ff-sell">Sell</Link>
+      <Link to="/admin" className="ff-sell">{t("header.sell")}</Link>
     </header>
   );
 }
 
 export default function App() {
+  const { t } = useLang();
   return (
     <>
       <Header />
@@ -53,17 +58,17 @@ export default function App() {
           <span className="ff-wordmark-main" style={{ fontSize: 24 }}>FRONTERA</span>
           <span className="ff-wordmark-sub" style={{ fontSize: 14 }}>FINDS</span>
         </span>
-        <p className="ff-footer-tag">El swapmeet sin fronteras — two cities, one marketplace.</p>
+        <p className="ff-footer-tag">{t("footer.tag")}</p>
         <p className="ff-footer-meta">
-          Shipping across the USA · Local pickup &amp; delivery in San Diego ⟷ Tijuana ·{" "}
-          <Link to="/about">How it works</Link>
+          {t("footer.meta")}
+          <Link to="/about">{t("footer.howItWorks")}</Link>
         </p>
         <a
           className="ff-social"
           href="https://instagram.com/fronterafind.s"
           target="_blank"
           rel="noreferrer"
-          aria-label="Frontera Finds on Instagram (@fronterafind.s)"
+          aria-label={t("footer.instagramAria")}
         >
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <rect x="2.5" y="2.5" width="19" height="19" rx="5.5" stroke="currentColor" strokeWidth="1.8" />
