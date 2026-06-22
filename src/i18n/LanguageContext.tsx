@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { en, es } from "./strings";
 import type { TranslationKey } from "./strings";
@@ -39,6 +39,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       /* ignore */
     }
   }
+
+  // Keep the document language in sync for assistive tech and search engines.
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
 
   const t = (key: TranslationKey, params?: Record<string, string | number>) =>
     translate(dict, lang, key, params);
