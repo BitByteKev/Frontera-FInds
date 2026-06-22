@@ -1,33 +1,27 @@
+import { useLang } from "../i18n/LanguageContext";
+
 export default function About() {
+  const { t } = useLang();
   return (
     <main className="ff-wrap" style={{ maxWidth: 720 }}>
       <span style={{ font: "600 12px 'Hanken Grotesk'", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ff-agave-600)" }}>
-        El swapmeet sin fronteras
+        {t("about.kicker")}
       </span>
-      <h1 style={{ margin: "12px 0 0" }}>Two cities. One marketplace.</h1>
-      <p style={{ lineHeight: 1.7, fontSize: 18 }}>
-        Frontera Finds is my personal online swapmeet for the San Diego–Tijuana
-        border — a Sunday garage sale that stretches across the line. Everything
-        here is mine, one-of-one, priced to move.
-      </p>
+      <h1 style={{ margin: "12px 0 0" }}>{t("about.title")}</h1>
+      <p style={{ lineHeight: 1.7, fontSize: 18 }}>{t("about.intro")}</p>
 
-      <h3>Shipping across the USA 🇺🇸</h3>
-      <p style={{ lineHeight: 1.7 }}>
-        Most items can ship anywhere in the United States. Message me with your
-        ZIP and I’ll confirm shipping before you pay.
-      </p>
+      <h3>{t("about.shippingHeading")}</h3>
+      <p style={{ lineHeight: 1.7 }}>{t("about.shippingBody")}</p>
 
-      <h3>Local pickup &amp; delivery — San Diego ⟷ Tijuana 🌵</h3>
-      <p style={{ lineHeight: 1.7 }}>
-        On either side of the line? Skip shipping — arrange free local pickup, or
-        local delivery on bigger items. Just tap WhatsApp or text on any listing.
-      </p>
+      <h3>{t("about.localHeading")}</h3>
+      <p style={{ lineHeight: 1.7 }}>{t("about.localBody")}</p>
 
-      <h3>How to buy</h3>
+      <h3>{t("about.howToBuyHeading")}</h3>
       <p style={{ lineHeight: 1.7 }}>
-        There’s no checkout here. Find something you like, hit <strong>WhatsApp</strong>,{" "}
-        <strong>Text</strong>, <strong>Message the seller</strong>, or <strong>Instagram</strong>,
-        and we’ll sort out payment (cash, Venmo, Zelle) and handoff directly.
+        {t("about.howToBuyLead")}{" "}
+        <strong>{t("contact.whatsapp")}</strong>, <strong>{t("contact.sms")}</strong>,{" "}
+        <strong>{t("contact.messageSeller")}</strong>, {t("about.orWord")}{" "}
+        <strong>Instagram</strong>{t("about.howToBuyTail")}
       </p>
     </main>
   );
