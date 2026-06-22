@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLang } from "../i18n/LanguageContext";
 
 type Theme = "light" | "dark";
 
@@ -10,6 +11,7 @@ function currentTheme(): Theme {
 
 export default function ThemeToggle() {
   const [theme, setTheme] = useState<Theme>(currentTheme);
+  const { t } = useLang();
 
   function toggle() {
     const next: Theme = theme === "dark" ? "light" : "dark";
@@ -27,8 +29,8 @@ export default function ThemeToggle() {
       type="button"
       className="ff-theme-toggle"
       onClick={toggle}
-      aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-      title={theme === "dark" ? "Light mode" : "Dark mode"}
+      aria-label={theme === "dark" ? t("theme.toLight") : t("theme.toDark")}
+      title={theme === "dark" ? t("theme.lightTitle") : t("theme.darkTitle")}
     >
       {theme === "dark" ? "☀️" : "🌙"}
     </button>

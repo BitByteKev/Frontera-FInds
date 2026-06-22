@@ -101,9 +101,8 @@ a { color: var(--ff-agave-600); }
 /* ---- Grid + cards ---- */
 .ff-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 @media (max-width: 800px) { .ff-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 520px) { .ff-grid { grid-template-columns: 1fr; } }
 .ff-card {
-  background: var(--ff-card); border: 1px solid var(--ff-line);
+  background: var(--ff-sand); border: 1px solid var(--ff-line);
   border-radius: 8px; overflow: hidden; text-decoration: none; color: inherit;
   display: flex; flex-direction: column;
   transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
@@ -113,6 +112,18 @@ a { color: var(--ff-agave-600); }
 .ff-card-body { padding: 12px 14px; }
 .ff-card-title { font: 500 14px/1.3 var(--font-text); color: var(--ff-text); }
 .ff-price { font: 600 17px var(--font-display); color: var(--ff-accent); margin-top: 5px; letter-spacing: 0.005em; }
+
+/* Mobile: marketplace-style 2-up grid — prominent price over a clipped title. */
+@media (max-width: 520px) {
+  .ff-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .ff-card-body { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px 10px; }
+  .ff-price { order: -1; margin-top: 0; font-size: 16px; }
+  .ff-card-title {
+    font-size: 13px; line-height: 1.3;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .ff-badges { display: none; }
+}
 
 /* ---- Badges ---- */
 .ff-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
@@ -160,6 +171,15 @@ a { color: var(--ff-agave-600); }
 }
 .ff-theme-toggle:hover { background: rgba(255, 255, 255, 0.1); }
 
+.ff-lang-toggle {
+  flex: none; height: 38px; padding: 0 12px; border-radius: 999px;
+  border: 1px solid rgba(143, 230, 163, 0.4); background: transparent;
+  color: var(--ff-bone); font: 700 13px var(--font-text); letter-spacing: 0.06em;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.ff-lang-toggle:hover { background: rgba(255, 255, 255, 0.1); }
+
 /* ---- Forms ---- */
 .ff-field { display: block; margin: 12px 0; }
 .ff-field label { display: block; font: 500 13px var(--font-text); color: var(--ff-muted); margin-bottom: 5px; }
@@ -180,6 +200,11 @@ a { color: var(--ff-agave-600); }
 .ff-footer a { color: var(--ff-agave-300); }
 .ff-footer-tag { font: italic 400 14px var(--font-text); color: var(--ff-agave-400); margin: 0; }
 .ff-footer-meta { font: 400 13px/1.6 var(--font-text); color: var(--ff-ash); margin: 0; max-width: 560px; }
+.ff-social {
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--ff-agave-300); transition: color 0.15s, transform 0.15s;
+}
+.ff-social:hover { color: var(--ff-agave-100); transform: translateY(-1px); }
 
 /* ---- Item gallery / slideshow ---- */
 .ff-gallery { display: flex; flex-direction: column; gap: 10px; }
