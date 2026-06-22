@@ -3,6 +3,7 @@ import type { Env } from "./index";
 import { rowToItem, type ItemRow } from "./db";
 import { requireAdmin } from "./auth";
 import { uniqueSlug } from "./slug";
+import { safeTranslate } from "./translate";
 
 const MAX_LIST = 200;
 
@@ -111,12 +112,16 @@ adminItems.post("/api/admin/items", async (c) => {
   const id = crypto.randomUUID();
   const slug = await uniqueSlug(c.env.DB, b.title.trim());
   const now = Date.now();
+  const title = b.title.trim();
+  const description = b.description ?? "";
+  const tr = await safeTranslate(c.env, title, description);
   await c.env.DB.prepare(
-    `INSERT INTO items (id,slug,title,description,price_cents,category,ships_usa,local_sdtj,status,created_at,updated_at)
-     VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)`
+    `INSERT INTO items (id,slug,title,description,price_cents,category,ships_usa,local_sdtj,status,created_at,updated_at,title_en,title_es,description_en,description_es)
+     VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)`
   ).bind(
-    id, slug, b.title.trim(), b.description ?? "", b.priceCents ?? 0, b.category ?? "misc",
-    b.shipsUsa === false ? 0 : 1, b.localSdtj === false ? 0 : 1, b.status ?? "published", now, now
+    id, slug, title, description, b.priceCents ?? 0, b.category ?? "misc",
+    b.shipsUsa === false ? 0 : 1, b.localSdtj === false ? 0 : 1, b.status ?? "published", now, now,
+    tr.title_en, tr.title_es, tr.description_en, tr.description_es
   ).run();
   await replacePhotos(c.env.DB, id, b.photoKeys ?? []);
   return c.json({ id, slug });
@@ -129,20 +134,39 @@ adminItems.patch("/api/admin/items/:id", async (c) => {
   const b = await c.req.json<ItemInput>();
   // Slug is stable once set; only generate one for legacy rows that never had it.
   const slug = existing.slug ?? (await uniqueSlug(c.env.DB, b.title?.trim() ?? existing.title));
+  const title = b.title?.trim() ?? existing.title;
+  const description = b.description ?? existing.description;
+
+  // Only call Claude when the text actually changed (or translations were never made).
+  // A status-only PATCH (e.g. "Mark sold") must not incur a translation cost.
+  const titleChanged = b.title !== undefined && b.title.trim() !== existing.title;
+  const descChanged = b.description !== undefined && b.description !== existing.description;
+  const needsTranslation = titleChanged || descChanged || existing.title_en == null;
+  const tr = needsTranslation
+    ? await safeTranslate(c.env, title, description)
+    : {
+        title_en: existing.title_en ?? title,
+        title_es: existing.title_es ?? title,
+        description_en: existing.description_en ?? description,
+        description_es: existing.description_es ?? description,
+      };
+
   await c.env.DB.prepare(
     `UPDATE items SET slug=?10, title=?2, description=?3, price_cents=?4, category=?5,
-       ships_usa=?6, local_sdtj=?7, status=?8, updated_at=?9 WHERE id=?1`
+       ships_usa=?6, local_sdtj=?7, status=?8, updated_at=?9,
+       title_en=?11, title_es=?12, description_en=?13, description_es=?14 WHERE id=?1`
   ).bind(
     id,
-    b.title?.trim() ?? existing.title,
-    b.description ?? existing.description,
+    title,
+    description,
     b.priceCents ?? existing.price_cents,
     b.category ?? existing.category,
     b.shipsUsa === undefined ? existing.ships_usa : b.shipsUsa ? 1 : 0,
     b.localSdtj === undefined ? existing.local_sdtj : b.localSdtj ? 1 : 0,
     b.status ?? existing.status,
     Date.now(),
-    slug
+    slug,
+    tr.title_en, tr.title_es, tr.description_en, tr.description_es
   ).run();
   if (b.photoKeys) await replacePhotos(c.env.DB, id, b.photoKeys);
   return c.json({ ok: true });

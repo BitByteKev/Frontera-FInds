@@ -1,8 +1,33 @@
 import { env, createExecutionContext, waitOnExecutionContext } from "cloudflare:test";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import "./setup-db";
 import app from "../src/index";
 import { signToken } from "../src/auth";
+
+vi.mock("@anthropic-ai/sdk", () => {
+  class FakeAnthropic {
+    messages = {
+      create: vi.fn(async () => ({
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              title: "Mock Title",
+              description: "Mock description.",
+              price_cents: 1000,
+              title_en: "Mock EN",
+              title_es: "Mock ES",
+              description_en: "Mock desc EN",
+              description_es: "Mock desc ES",
+            }),
+          },
+        ],
+      })),
+    };
+    constructor(_opts: unknown) {}
+  }
+  return { default: FakeAnthropic };
+});
 
 async function seed() {
   await env.DB.prepare(`DELETE FROM item_photos`).run();
@@ -234,5 +259,52 @@ describe("admin item CRUD", () => {
     await waitOnExecutionContext(ctx);
     expect(res.status).toBe(200);
     expect(Array.isArray((await res.json<{ items: any[] }>()).items)).toBe(true);
+  });
+});
+
+describe("item translation on save", () => {
+  it("POST stores bilingual columns; GET returns them", async () => {
+    const headers = await adminHeaders();
+    const ctx = createExecutionContext();
+    const res = await app.fetch(new Request("http://x/api/admin/items", {
+      method: "POST", headers,
+      body: JSON.stringify({ title: "bici roja", description: "una bici" }),
+    }), env, ctx);
+    await waitOnExecutionContext(ctx);
+    expect(res.status).toBe(200);
+    const { id } = await res.json<{ id: string }>();
+
+    const ctx2 = createExecutionContext();
+    const got = await app.fetch(new Request(`http://x/api/items/${id}`), env, ctx2);
+    await waitOnExecutionContext(ctx2);
+    const { item } = await got.json<{ item: any }>();
+    expect(item.titleEn).toBe("Mock EN");
+    expect(item.titleEs).toBe("Mock ES");
+    expect(item.descriptionEs).toBe("Mock desc ES");
+  });
+
+  it("status-only PATCH succeeds and preserves translations", async () => {
+    const headers = await adminHeaders();
+    const ctx = createExecutionContext();
+    const res = await app.fetch(new Request("http://x/api/admin/items", {
+      method: "POST", headers, body: JSON.stringify({ title: "Thing", description: "d" }),
+    }), env, ctx);
+    await waitOnExecutionContext(ctx);
+    const { id } = await res.json<{ id: string }>();
+
+    const ctx2 = createExecutionContext();
+    const patch = await app.fetch(new Request(`http://x/api/admin/items/${id}`, {
+      method: "PATCH", headers, body: JSON.stringify({ status: "sold" }),
+    }), env, ctx2);
+    await waitOnExecutionContext(ctx2);
+    expect(patch.status).toBe(200);
+
+    const ctx3 = createExecutionContext();
+    const got = await app.fetch(new Request(`http://x/api/admin/items`, { headers }), env, ctx3);
+    await waitOnExecutionContext(ctx3);
+    const { items } = await got.json<{ items: any[] }>();
+    const it = items.find((x) => x.id === id);
+    expect(it.status).toBe("sold");
+    expect(it.titleEs).toBe("Mock ES");
   });
 });
