@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { api } from "../lib/api";
 import type { Item } from "../lib/types";
 import ItemCard from "../components/ItemCard";
+import { useLang } from "../i18n/LanguageContext";
 
 export default function Home() {
   const [params, setParams] = useSearchParams();
@@ -17,6 +18,7 @@ export default function Home() {
   const sort = params.get("sort") ?? "newest";
   const minPrice = params.get("minPrice") ?? "";
   const maxPrice = params.get("maxPrice") ?? "";
+  const { t } = useLang();
 
   useEffect(() => {
     setLoading(true);
@@ -56,12 +58,12 @@ export default function Home() {
     <>
     <div className="ff-hero">
       <div className="ff-hero-tag">
-        <b>Two cities. One marketplace.</b>
-        <i>El swapmeet sin fronteras</i>
+        <b>{t("home.heroTitle")}</b>
+        <i>{t("home.heroSub")}</i>
       </div>
       <span className="ff-pill">
         San Diego <span className="ff-arrow">⟷</span> Tijuana
-        <span className="ff-dot" /> Shipping across the USA
+        <span className="ff-dot" /> {t("home.shippingUsa")}
       </span>
     </div>
     <main className="ff-wrap">
@@ -69,35 +71,35 @@ export default function Home() {
         <input
           className="ff-input"
           type="search"
-          placeholder="Search items…"
+          placeholder={t("home.searchPlaceholder")}
           defaultValue={q}
           onChange={(e) => setParam("q", e.target.value.trim())}
         />
         <select className="ff-input" value={sort} onChange={(e) => setParam("sort", e.target.value === "newest" ? "" : e.target.value)}>
-          <option value="newest">Newest</option>
-          <option value="price_asc">Price: low to high</option>
-          <option value="price_desc">Price: high to low</option>
+          <option value="newest">{t("home.sortNewest")}</option>
+          <option value="price_asc">{t("home.sortPriceAsc")}</option>
+          <option value="price_desc">{t("home.sortPriceDesc")}</option>
         </select>
-        <input className="ff-input ff-input-price" type="number" min="0" placeholder="Min $" defaultValue={minPrice}
+        <input className="ff-input ff-input-price" type="number" min="0" placeholder={t("home.minPrice")} defaultValue={minPrice}
           onChange={(e) => setParam("minPrice", e.target.value)} />
-        <input className="ff-input ff-input-price" type="number" min="0" placeholder="Max $" defaultValue={maxPrice}
+        <input className="ff-input ff-input-price" type="number" min="0" placeholder={t("home.maxPrice")} defaultValue={maxPrice}
           onChange={(e) => setParam("maxPrice", e.target.value)} />
       </div>
       <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
         <button className={ships ? "ff-btn ff-btn-green" : "ff-btn ff-btn-outline"} onClick={() => toggle("ships")}>
-          Ships USA
+          {t("home.filterShips")}
         </button>
         <button className={local ? "ff-btn ff-btn-green" : "ff-btn ff-btn-outline"} onClick={() => toggle("local")}>
-          Local pickup / delivery
+          {t("home.filterLocal")}
         </button>
         <button className={hideSold ? "ff-btn ff-btn-green" : "ff-btn ff-btn-outline"} onClick={() => toggle("hideSold")}>
-          Hide sold
+          {t("home.filterHideSold")}
         </button>
       </div>
 
-      {loading && <p>Loading…</p>}
-      {error && <p style={{ color: "#a50e0e" }}>Couldn't load items: {error}</p>}
-      {!loading && !error && items.length === 0 && <p>No items match your filters.</p>}
+      {loading && <p>{t("common.loading")}</p>}
+      {error && <p style={{ color: "#a50e0e" }}>{t("home.loadErrorPrefix")}{error}</p>}
+      {!loading && !error && items.length === 0 && <p>{t("home.noResults")}</p>}
 
       <div className="ff-grid">
         {items.map((it) => <ItemCard key={it.id} item={it} />)}
