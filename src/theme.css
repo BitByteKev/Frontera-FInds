@@ -171,6 +171,15 @@ a { color: var(--ff-agave-600); }
 }
 .ff-theme-toggle:hover { background: rgba(255, 255, 255, 0.1); }
 
+.ff-lang-toggle {
+  flex: none; height: 38px; padding: 0 12px; border-radius: 999px;
+  border: 1px solid rgba(143, 230, 163, 0.4); background: transparent;
+  color: var(--ff-bone); font: 700 13px var(--font-text); letter-spacing: 0.06em;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.ff-lang-toggle:hover { background: rgba(255, 255, 255, 0.1); }
+
 /* ---- Forms ---- */
 .ff-field { display: block; margin: 12px 0; }
 .ff-field label { display: block; font: 500 13px var(--font-text); color: var(--ff-muted); margin-bottom: 5px; }
