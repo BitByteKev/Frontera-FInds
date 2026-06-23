@@ -10,6 +10,7 @@ import About from "./pages/About";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminManage from "./pages/admin/AdminManage";
 import AdminEdit from "./pages/admin/AdminEdit";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 
 function Header() {
   const navigate = useNavigate();
@@ -49,6 +50,7 @@ export default function App() {
         <Route path="/about" element={<About />} />
         <Route path="/admin" element={<AdminLogin />} />
         <Route path="/admin/manage" element={<AdminManage />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/new" element={<AdminEdit />} />
         <Route path="/admin/edit/:id" element={<AdminEdit />} />
       </Routes>

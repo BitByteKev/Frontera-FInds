@@ -56,6 +56,7 @@ export default function AdminManage() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h1>Your items</h1>
         <div style={{ display: "flex", gap: 8 }}>
+          <Link className="ff-btn ff-btn-outline" to="/admin/dashboard">Dashboard</Link>
           <Link className="ff-btn ff-btn-green" to="/admin/new">+ New item</Link>
           <button className="ff-btn ff-btn-outline" onClick={translateAll} disabled={!!xlating && !xlating.startsWith("Done")}>
             {xlating ?? "Translate all items"}
