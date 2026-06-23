@@ -4,6 +4,7 @@ import { api } from "../lib/api";
 import type { Item } from "../lib/types";
 import ItemCard from "../components/ItemCard";
 import { useLang } from "../i18n/LanguageContext";
+import { localizeItem } from "../lib/localize";
 
 export default function Home() {
   const [params, setParams] = useSearchParams();
@@ -18,7 +19,7 @@ export default function Home() {
   const sort = params.get("sort") ?? "newest";
   const minPrice = params.get("minPrice") ?? "";
   const maxPrice = params.get("maxPrice") ?? "";
-  const { t } = useLang();
+  const { t, lang } = useLang();
 
   useEffect(() => {
     setLoading(true);
@@ -102,7 +103,7 @@ export default function Home() {
       {!loading && !error && items.length === 0 && <p>{t("home.noResults")}</p>}
 
       <div className="ff-grid">
-        {items.map((it) => <ItemCard key={it.id} item={it} />)}
+        {items.map((it) => <ItemCard key={it.id} item={localizeItem(it, lang)} />)}
       </div>
     </main>
     </>
