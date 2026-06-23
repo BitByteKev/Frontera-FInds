@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import type { Env } from "./index";
 import { rowToItem, type ItemRow } from "./db";
 import type { Item } from "./db";
+import { getUsdMxnRate } from "./fx";
 
 export function escapeHtml(s: string): string {
   return s
@@ -19,15 +20,21 @@ export interface ItemMeta {
   image: string;
 }
 
-function formatPrice(cents: number): string {
-  return `$${Math.round(cents / 100).toLocaleString("en-US")}`;
+// USD always; appends an approximate peso figure when a rate is supplied so shared
+// link previews read e.g. "$120 · ~$2,220 MXN".
+function formatPrice(cents: number, usdMxn?: number): string {
+  const usd = `$${Math.round(cents / 100).toLocaleString("en-US")}`;
+  if (!usdMxn) return usd;
+  const mxn = Math.round((cents / 100) * usdMxn).toLocaleString("en-US");
+  return `${usd} · ~$${mxn} MXN`;
 }
 
-export function buildItemMeta(item: Item, siteUrl: string): ItemMeta {
+export function buildItemMeta(item: Item, siteUrl: string, usdMxn?: number): ItemMeta {
   const base = siteUrl.replace(/\/$/, "");
+  const price = formatPrice(item.priceCents, usdMxn);
   const desc = item.description?.trim()
-    ? `${formatPrice(item.priceCents)} — ${item.description.trim().slice(0, 180)}`
-    : `${formatPrice(item.priceCents)} — secondhand find at Frontera Finds.`;
+    ? `${price} — ${item.description.trim().slice(0, 180)}`
+    : `${price} — secondhand find at Frontera Finds.`;
   return {
     title: `${item.title} · Frontera Finds`,
     description: desc,
@@ -39,8 +46,8 @@ export function buildItemMeta(item: Item, siteUrl: string): ItemMeta {
 // Inject per-item meta into the built HTML shell. Uses the Workers-runtime
 // HTMLRewriter: rewrites <title>/<meta name=description> and appends OG/Twitter
 // tags to <head>. Returns the rewritten HTML as a string.
-export async function injectMeta(shellHtml: string, item: Item, siteUrl: string): Promise<string> {
-  const m = buildItemMeta(item, siteUrl);
+export async function injectMeta(shellHtml: string, item: Item, siteUrl: string, usdMxn?: number): Promise<string> {
+  const m = buildItemMeta(item, siteUrl, usdMxn);
   const imageTags = m.image
     ? `<meta property="og:image" content="${escapeHtml(m.image)}" />` +
       `<meta name="twitter:image" content="${escapeHtml(m.image)}" />`
@@ -81,6 +88,7 @@ og.get("/item/:idOrSlug", async (c) => {
     .all<{ r2_key: string }>();
   const item = rowToItem(row, results.map((r) => r.r2_key));
   const siteUrl = c.env.PUBLIC_SITE_URL;
+  const rate = await getUsdMxnRate();
 
   // Fetch the built SPA shell from the static origin and inject meta. If the
   // origin is unreachable, fall back to a minimal HTML doc that still carries
@@ -93,9 +101,9 @@ og.get("/item/:idOrSlug", async (c) => {
 
   let html: string;
   if (shell) {
-    html = await injectMeta(shell, item, siteUrl);
+    html = await injectMeta(shell, item, siteUrl, rate);
   } else {
-    const m = buildItemMeta(item, siteUrl);
+    const m = buildItemMeta(item, siteUrl, rate);
     const imageTags = m.image
       ? `<meta property="og:image" content="${escapeHtml(m.image)}" />` +
         `<meta name="twitter:image" content="${escapeHtml(m.image)}" />`

@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { adminApi, clearToken, getToken } from "../../lib/api";
 import type { Item } from "../../lib/types";
-import { money, imgUrl } from "../../lib/format";
+import { formatDual, imgUrl } from "../../lib/format";
+import { useRate } from "../../lib/currency";
 
 export default function AdminManage() {
   const navigate = useNavigate();
   const [items, setItems] = useState<Item[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const rate = useRate();
 
   function load() {
     adminApi.listAll()
@@ -53,7 +55,7 @@ export default function AdminManage() {
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 700 }}>{it.title}</div>
               <div style={{ color: "var(--ff-muted)", fontSize: 13 }}>
-                {money(it.priceCents)} · {it.status}
+                {formatDual(it.priceCents, rate)} · {it.status}
               </div>
             </div>
             <Link className="ff-btn ff-btn-outline" to={`/admin/edit/${it.id}`}>Edit</Link>

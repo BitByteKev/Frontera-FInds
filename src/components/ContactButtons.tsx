@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { api } from "../lib/api";
 import type { Item, SiteConfig } from "../lib/types";
-import { money } from "../lib/format";
+import { formatDual } from "../lib/format";
 import { useLang } from "../i18n/LanguageContext";
+import { useRate } from "../lib/currency";
 
 function waLink(phone: string, text: string): string {
   const digits = phone.replace(/[^\d]/g, "");
@@ -15,6 +16,7 @@ function smsLink(phone: string, text: string): string {
 
 export default function ContactButtons({ item }: { item: Item }) {
   const { t } = useLang();
+  const rate = useRate();
   const [cfg, setCfg] = useState<SiteConfig | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
@@ -27,7 +29,7 @@ export default function ContactButtons({ item }: { item: Item }) {
 
   const pitch = t("contact.pitch", {
     title: item.title,
-    price: money(item.priceCents),
+    price: formatDual(item.priceCents, rate),
     url: `${location.origin}/item/${item.slug}`,
   });
 

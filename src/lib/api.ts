@@ -12,6 +12,7 @@ async function json<T>(res: Response): Promise<T> {
 
 export const api = {
   config: () => fetch("/api/config").then((r) => json<SiteConfig>(r)),
+  fx: () => fetch("/api/fx").then((r) => json<{ rate: number }>(r)),
   list: (params: URLSearchParams) => fetch(`/api/items?${params}`).then((r) => json<{ items: Item[] }>(r)),
   get: (id: string) => fetch(`/api/items/${id}`).then((r) => json<{ item: Item }>(r)),
   contact: (id: string, body: { name?: string; message: string; replyTo?: string }) =>

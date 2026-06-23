@@ -1,11 +1,13 @@
 import { Link } from "react-router-dom";
 import type { Item } from "../lib/types";
-import { money, imgUrl } from "../lib/format";
+import { formatDual, imgUrl } from "../lib/format";
 import Badges from "./Badges";
 import { useLang } from "../i18n/LanguageContext";
+import { useRate } from "../lib/currency";
 
 export default function ItemCard({ item }: { item: Item }) {
   const { t } = useLang();
+  const rate = useRate();
   return (
     <Link to={`/item/${item.slug}`} className="ff-card">
       <div className="ff-card-media">
@@ -19,7 +21,7 @@ export default function ItemCard({ item }: { item: Item }) {
       </div>
       <div className="ff-card-body">
         <div className="ff-card-title">{item.title}</div>
-        <div className="ff-price">{money(item.priceCents)}</div>
+        <div className="ff-price">{formatDual(item.priceCents, rate)}</div>
         <Badges item={item} />
       </div>
     </Link>
