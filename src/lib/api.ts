@@ -52,4 +52,7 @@ export const adminApi = {
     }).then((r) => json<{ ok: true }>(r)),
   remove: (id: string) =>
     fetch(`/api/admin/items/${id}`, { method: "DELETE", headers: authHeaders() }).then((r) => json<{ ok: true }>(r)),
+  translateAll: () =>
+    fetch("/api/admin/translate-all", { method: "POST", headers: authHeaders() })
+      .then((r) => json<{ translated: number; remaining: number; done: boolean }>(r)),
 };

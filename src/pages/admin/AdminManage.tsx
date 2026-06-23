@@ -9,6 +9,7 @@ export default function AdminManage() {
   const navigate = useNavigate();
   const [items, setItems] = useState<Item[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [xlating, setXlating] = useState<string | null>(null);
   const rate = useRate();
 
   function load() {
@@ -33,6 +34,22 @@ export default function AdminManage() {
     await adminApi.remove(it.id);
     load();
   }
+  async function translateAll() {
+    setXlating("Translating…");
+    try {
+      // Backfill is batched server-side; loop until the server reports done.
+      // Cap iterations as a safety net against an unexpected non-decreasing remaining.
+      for (let i = 0; i < 1000; i++) {
+        const r = await adminApi.translateAll();
+        if (r.done) { setXlating("Done — all items translated."); break; }
+        setXlating(`Translating… ${r.remaining} left`);
+      }
+      load();
+    } catch (e) {
+      setXlating(null);
+      setError(String(e));
+    }
+  }
 
   return (
     <main className="ff-wrap">
@@ -40,6 +57,9 @@ export default function AdminManage() {
         <h1>Your items</h1>
         <div style={{ display: "flex", gap: 8 }}>
           <Link className="ff-btn ff-btn-green" to="/admin/new">+ New item</Link>
+          <button className="ff-btn ff-btn-outline" onClick={translateAll} disabled={!!xlating && !xlating.startsWith("Done")}>
+            {xlating ?? "Translate all items"}
+          </button>
           <button className="ff-btn ff-btn-outline" onClick={() => { clearToken(); navigate("/admin"); }}>
             Log out
           </button>
