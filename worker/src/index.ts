@@ -5,6 +5,7 @@ import { auth } from "./auth";
 import { generate } from "./generate";
 import { contact } from "./contact";
 import { og } from "./og";
+import { fx } from "./fx";
 
 export interface Env {
   DB: D1Database;
@@ -37,5 +38,6 @@ app.route("/", auth);
 app.route("/", generate);
 app.route("/", contact);
 app.route("/", og);
+app.route("/", fx);
 
 export default app;

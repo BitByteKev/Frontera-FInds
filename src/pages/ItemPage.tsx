@@ -2,17 +2,19 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import type { Item } from "../lib/types";
-import { money } from "../lib/format";
+import { formatDual } from "../lib/format";
 import Badges from "../components/Badges";
 import ContactButtons from "../components/ContactButtons";
 import Gallery from "../components/Gallery";
 import { useLang } from "../i18n/LanguageContext";
+import { useRate } from "../lib/currency";
 
 export default function ItemPage() {
   const { id } = useParams();
   const [item, setItem] = useState<Item | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { t } = useLang();
+  const rate = useRate();
 
   useEffect(() => {
     if (!id) return;
@@ -29,7 +31,7 @@ export default function ItemPage() {
         <h1 style={{ margin: 0 }}>{item.title}</h1>
         {item.status === "sold" && <span className="ff-badge-sold">{t("badge.sold")}</span>}
       </div>
-      <div className="ff-price" style={{ fontSize: 24 }}>{money(item.priceCents)}</div>
+      <div className="ff-price" style={{ fontSize: 24 }}>{formatDual(item.priceCents, rate)}</div>
       <Badges item={item} />
       <p style={{ whiteSpace: "pre-wrap", lineHeight: 1.5 }}>{item.description}</p>
       {item.status === "sold"
