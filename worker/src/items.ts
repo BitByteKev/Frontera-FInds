@@ -97,6 +97,7 @@ async function replacePhotos(db: D1Database, itemId: string, keys: string[]): Pr
 export const adminItems = new Hono<{ Bindings: Env }>();
 adminItems.use("/api/admin/items", requireAdmin);
 adminItems.use("/api/admin/items/*", requireAdmin);
+adminItems.use("/api/admin/translate-all", requireAdmin);
 
 adminItems.get("/api/admin/items", async (c) => {
   const { results } = await c.env.DB
@@ -104,6 +105,30 @@ adminItems.get("/api/admin/items", async (c) => {
     .all<ItemRow>();
   const keys = await photoKeysFor(c.env.DB, results.map((r) => r.id));
   return c.json({ items: results.map((r) => rowToItem(r, keys.get(r.id) ?? [])) });
+});
+
+const TRANSLATE_BATCH = 5;
+
+adminItems.post("/api/admin/translate-all", async (c) => {
+  const { results } = await c.env.DB
+    .prepare(`SELECT * FROM items WHERE title_en IS NULL ORDER BY created_at ASC LIMIT ?1`)
+    .bind(TRANSLATE_BATCH)
+    .all<ItemRow>();
+
+  let translated = 0;
+  for (const row of results) {
+    const tr = await safeTranslate(c.env, row.title, row.description);
+    await c.env.DB.prepare(
+      `UPDATE items SET title_en=?2, title_es=?3, description_en=?4, description_es=?5 WHERE id=?1`
+    ).bind(row.id, tr.title_en, tr.title_es, tr.description_en, tr.description_es).run();
+    translated++;
+  }
+
+  const rest = await c.env.DB
+    .prepare(`SELECT COUNT(*) AS n FROM items WHERE title_en IS NULL`)
+    .first<{ n: number }>();
+  const remaining = rest?.n ?? 0;
+  return c.json({ translated, remaining, done: remaining === 0 });
 });
 
 adminItems.post("/api/admin/items", async (c) => {
