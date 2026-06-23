@@ -29,10 +29,34 @@ describe("GET /api/fx", () => {
     expect(rate).toBe(FALLBACK_USD_MXN);
   });
 
-  it("falls back when the upstream returns an implausible rate", async () => {
+  it("falls back when the upstream returns a negative rate", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => new Response(JSON.stringify({ rates: { MXN: -5 } }), { status: 200 })),
+    );
+    const ctx = createExecutionContext();
+    const res = await app.fetch(new Request("http://x/api/fx"), env, ctx);
+    await waitOnExecutionContext(ctx);
+    const { rate } = await res.json<{ rate: number }>();
+    expect(rate).toBe(FALLBACK_USD_MXN);
+  });
+
+  it("falls back when the upstream rate is implausibly high", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify({ rates: { MXN: 5000 } }), { status: 200 })),
+    );
+    const ctx = createExecutionContext();
+    const res = await app.fetch(new Request("http://x/api/fx"), env, ctx);
+    await waitOnExecutionContext(ctx);
+    const { rate } = await res.json<{ rate: number }>();
+    expect(rate).toBe(FALLBACK_USD_MXN);
+  });
+
+  it("falls back when MXN is non-numeric", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify({ rates: { MXN: "nope" } }), { status: 200 })),
     );
     const ctx = createExecutionContext();
     const res = await app.fetch(new Request("http://x/api/fx"), env, ctx);

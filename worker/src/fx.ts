@@ -16,7 +16,9 @@ fx.get("/api/fx", async (c) => {
   try {
     const res = await fetch(FX_URL, {
       cf: { cacheTtl: 43200, cacheEverything: true },
-    } as RequestInit);
+      // Don't let a hung upstream stall first paint — fail over to the fallback fast.
+      signal: AbortSignal.timeout(2500),
+    });
     if (res.ok) {
       const data = (await res.json()) as { rates?: { MXN?: number } };
       const mxn = data?.rates?.MXN;
