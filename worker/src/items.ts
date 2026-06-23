@@ -166,7 +166,13 @@ adminItems.patch("/api/admin/items/:id", async (c) => {
   // A status-only PATCH (e.g. "Mark sold") must not incur a translation cost.
   const titleChanged = b.title !== undefined && b.title.trim() !== existing.title;
   const descChanged = b.description !== undefined && b.description !== existing.description;
-  const needsTranslation = titleChanged || descChanged || existing.title_en == null;
+  // Re-translate only when the text changed, or when any translation column is missing
+  // (legacy/partially-translated rows). A status-only PATCH leaves all four set, so it
+  // skips the Claude call entirely.
+  const missingTranslation =
+    existing.title_en == null || existing.title_es == null ||
+    existing.description_en == null || existing.description_es == null;
+  const needsTranslation = titleChanged || descChanged || missingTranslation;
   const tr = needsTranslation
     ? await safeTranslate(c.env, title, description)
     : {

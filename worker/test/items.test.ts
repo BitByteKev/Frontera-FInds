@@ -4,26 +4,30 @@ import "./setup-db";
 import app from "../src/index";
 import { signToken } from "../src/auth";
 
+// Hoisted so individual tests can assert call counts (e.g. that a status-only PATCH
+// does NOT invoke Claude — the cost-avoidance guarantee).
+const anthropicCreate = vi.hoisted(() =>
+  vi.fn(async () => ({
+    content: [
+      {
+        type: "text",
+        text: JSON.stringify({
+          title: "Mock Title",
+          description: "Mock description.",
+          price_cents: 1000,
+          title_en: "Mock EN",
+          title_es: "Mock ES",
+          description_en: "Mock desc EN",
+          description_es: "Mock desc ES",
+        }),
+      },
+    ],
+  })),
+);
+
 vi.mock("@anthropic-ai/sdk", () => {
   class FakeAnthropic {
-    messages = {
-      create: vi.fn(async () => ({
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify({
-              title: "Mock Title",
-              description: "Mock description.",
-              price_cents: 1000,
-              title_en: "Mock EN",
-              title_es: "Mock ES",
-              description_en: "Mock desc EN",
-              description_es: "Mock desc ES",
-            }),
-          },
-        ],
-      })),
-    };
+    messages = { create: anthropicCreate };
     constructor(_opts: unknown) {}
   }
   return { default: FakeAnthropic };
@@ -292,12 +296,15 @@ describe("item translation on save", () => {
     await waitOnExecutionContext(ctx);
     const { id } = await res.json<{ id: string }>();
 
+    // The create above translated once; a status-only PATCH must not call Claude again.
+    anthropicCreate.mockClear();
     const ctx2 = createExecutionContext();
     const patch = await app.fetch(new Request(`http://x/api/admin/items/${id}`, {
       method: "PATCH", headers, body: JSON.stringify({ status: "sold" }),
     }), env, ctx2);
     await waitOnExecutionContext(ctx2);
     expect(patch.status).toBe(200);
+    expect(anthropicCreate).not.toHaveBeenCalled();
 
     const ctx3 = createExecutionContext();
     const got = await app.fetch(new Request(`http://x/api/admin/items`, { headers }), env, ctx3);
