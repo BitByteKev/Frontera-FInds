@@ -137,16 +137,18 @@ adminItems.post("/api/admin/items", async (c) => {
   const id = crypto.randomUUID();
   const slug = await uniqueSlug(c.env.DB, b.title.trim());
   const now = Date.now();
+  const createStatus = b.status ?? "published";
+  const createSoldAt = createStatus === "sold" ? now : null;
   const title = b.title.trim();
   const description = b.description ?? "";
   const tr = await safeTranslate(c.env, title, description);
   await c.env.DB.prepare(
-    `INSERT INTO items (id,slug,title,description,price_cents,category,ships_usa,local_sdtj,status,created_at,updated_at,title_en,title_es,description_en,description_es)
-     VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)`
+    `INSERT INTO items (id,slug,title,description,price_cents,category,ships_usa,local_sdtj,status,created_at,updated_at,title_en,title_es,description_en,description_es,sold_at)
+     VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16)`
   ).bind(
     id, slug, title, description, b.priceCents ?? 0, b.category ?? "misc",
-    b.shipsUsa === false ? 0 : 1, b.localSdtj === false ? 0 : 1, b.status ?? "published", now, now,
-    tr.title_en, tr.title_es, tr.description_en, tr.description_es
+    b.shipsUsa === false ? 0 : 1, b.localSdtj === false ? 0 : 1, createStatus, now, now,
+    tr.title_en, tr.title_es, tr.description_en, tr.description_es, createSoldAt
   ).run();
   await replacePhotos(c.env.DB, id, b.photoKeys ?? []);
   return c.json({ id, slug });
@@ -182,10 +184,17 @@ adminItems.patch("/api/admin/items/:id", async (c) => {
         description_es: existing.description_es ?? description,
       };
 
+  // sold_at tracks when the item entered the "sold" state. Set it when transitioning
+  // into sold from another status; clear it whenever the item is no longer sold.
+  const newStatus = b.status ?? existing.status;
+  let soldAt = existing.sold_at;
+  if (newStatus === "sold" && existing.status !== "sold") soldAt = Date.now();
+  else if (newStatus !== "sold") soldAt = null;
+
   await c.env.DB.prepare(
     `UPDATE items SET slug=?10, title=?2, description=?3, price_cents=?4, category=?5,
        ships_usa=?6, local_sdtj=?7, status=?8, updated_at=?9,
-       title_en=?11, title_es=?12, description_en=?13, description_es=?14 WHERE id=?1`
+       title_en=?11, title_es=?12, description_en=?13, description_es=?14, sold_at=?15 WHERE id=?1`
   ).bind(
     id,
     title,
@@ -194,10 +203,10 @@ adminItems.patch("/api/admin/items/:id", async (c) => {
     b.category ?? existing.category,
     b.shipsUsa === undefined ? existing.ships_usa : b.shipsUsa ? 1 : 0,
     b.localSdtj === undefined ? existing.local_sdtj : b.localSdtj ? 1 : 0,
-    b.status ?? existing.status,
+    newStatus,
     Date.now(),
     slug,
-    tr.title_en, tr.title_es, tr.description_en, tr.description_es
+    tr.title_en, tr.title_es, tr.description_en, tr.description_es, soldAt
   ).run();
   if (b.photoKeys) await replacePhotos(c.env.DB, id, b.photoKeys);
   return c.json({ ok: true });

@@ -307,7 +307,7 @@ describe("item translation on save", () => {
     expect(item.descriptionEs).toBe("Mock desc ES");
   });
 
-  it("status-only PATCH succeeds and preserves translations", async () => {
+  it("status-only PATCH sets sold_at, preserves translations, and skips Claude", async () => {
     const headers = await adminHeaders();
     const ctx = createExecutionContext();
     const res = await app.fetch(new Request("http://x/api/admin/items", {
@@ -333,5 +333,36 @@ describe("item translation on save", () => {
     const it = items.find((x) => x.id === id);
     expect(it.status).toBe("sold");
     expect(it.titleEs).toBe("Mock ES");
+    expect(typeof it.soldAt).toBe("number");
+  });
+
+  it("relisting a sold item clears sold_at", async () => {
+    const headers = await adminHeaders();
+    const ctx = createExecutionContext();
+    const res = await app.fetch(new Request("http://x/api/admin/items", {
+      method: "POST", headers, body: JSON.stringify({ title: "Relist me", description: "d", status: "sold" }),
+    }), env, ctx);
+    await waitOnExecutionContext(ctx);
+    const { id } = await res.json<{ id: string }>();
+
+    // Created already sold -> sold_at should be set.
+    let ctx2 = createExecutionContext();
+    let got = await app.fetch(new Request(`http://x/api/admin/items`, { headers }), env, ctx2);
+    await waitOnExecutionContext(ctx2);
+    let items = (await got.json<{ items: any[] }>()).items;
+    expect(typeof items.find((x) => x.id === id).soldAt).toBe("number");
+
+    // Relist -> published -> sold_at cleared.
+    const ctx3 = createExecutionContext();
+    await app.fetch(new Request(`http://x/api/admin/items/${id}`, {
+      method: "PATCH", headers, body: JSON.stringify({ status: "published" }),
+    }), env, ctx3);
+    await waitOnExecutionContext(ctx3);
+
+    const ctx4 = createExecutionContext();
+    got = await app.fetch(new Request(`http://x/api/admin/items`, { headers }), env, ctx4);
+    await waitOnExecutionContext(ctx4);
+    items = (await got.json<{ items: any[] }>()).items;
+    expect(items.find((x) => x.id === id).soldAt).toBeNull();
   });
 });
