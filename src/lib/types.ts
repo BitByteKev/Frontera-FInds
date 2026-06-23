@@ -10,6 +10,7 @@ export interface Item {
   status: "published" | "sold" | "hidden";
   createdAt: number;
   updatedAt: number;
+  soldAt?: number | null;
   photoKeys: string[];
   titleEn?: string | null;
   titleEs?: string | null;
