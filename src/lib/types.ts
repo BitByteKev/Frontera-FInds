@@ -11,6 +11,10 @@ export interface Item {
   createdAt: number;
   updatedAt: number;
   photoKeys: string[];
+  titleEn?: string | null;
+  titleEs?: string | null;
+  descriptionEn?: string | null;
+  descriptionEs?: string | null;
 }
 
 export interface SiteConfig {
