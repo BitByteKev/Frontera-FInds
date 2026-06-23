@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { buildItemMeta, escapeHtml, injectMeta } from "../src/og";
 import type { Item } from "../src/db";
 import { env, createExecutionContext, waitOnExecutionContext } from "cloudflare:test";
@@ -55,7 +55,17 @@ describe("injectMeta", () => {
 });
 
 describe("GET /item/:idOrSlug", () => {
-  it("returns HTML with the item's OG title for a real slug", async () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("returns HTML with the item's OG title and dual-currency price for a real slug", async () => {
+    // Stub both subrequests the handler makes: the SPA shell and the FX rate.
+    vi.stubGlobal("fetch", vi.fn(async (input: unknown) => {
+      const url = typeof input === "string" ? input : (input as Request).url;
+      if (url.includes("open.er-api.com")) {
+        return new Response(JSON.stringify({ rates: { MXN: 18.5 } }), { status: 200 });
+      }
+      return new Response(SHELL, { status: 200, headers: { "content-type": "text/html" } });
+    }));
     await env.DB.prepare(`DELETE FROM items`).run();
     await env.DB.prepare(
       `INSERT INTO items (id,slug,title,description,price_cents,category,ships_usa,local_sdtj,status,created_at,updated_at)
@@ -68,6 +78,8 @@ describe("GET /item/:idOrSlug", () => {
     expect(res.headers.get("content-type")).toContain("text/html");
     const html = await res.text();
     expect(html).toContain('property="og:title" content="My cool chair · Frontera Finds"');
+    // $50 at 18.5 → ~$925 MXN in the preview description.
+    expect(html).toContain("MXN");
   });
 
   it("404s for an unknown slug", async () => {
