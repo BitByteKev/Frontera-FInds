@@ -22,10 +22,19 @@ export interface ItemMeta {
 
 // USD always; appends an approximate peso figure when a rate is supplied so shared
 // link previews read e.g. "$120 · ~$2,220 MXN".
+// Snap a peso amount to a tidier figure: round to the nearest ten, but keep
+// anything that already lands on $x5 (e.g. 185 stays 185). So 86→90, 84→80, 85→85.
+function roundPesos(pesos: number): number {
+  const rem = pesos % 10;
+  if (rem === 5) return pesos;
+  if (rem < 5) return pesos - rem;
+  return pesos + (10 - rem);
+}
+
 function formatPrice(cents: number, usdMxn?: number): string {
   const usd = `$${Math.round(cents / 100).toLocaleString("en-US")}`;
   if (!usdMxn) return usd;
-  const mxn = Math.round((cents / 100) * usdMxn).toLocaleString("en-US");
+  const mxn = roundPesos(Math.round((cents / 100) * usdMxn)).toLocaleString("en-US");
   return `${usd} · ~$${mxn} MXN`;
 }
 
