@@ -10,6 +10,7 @@ export interface ItemRow {
   status: string;
   created_at: number;
   updated_at: number;
+  sold_at: number | null;
   title_en: string | null;
   title_es: string | null;
   description_en: string | null;
@@ -28,6 +29,7 @@ export interface Item {
   status: "published" | "sold" | "hidden";
   createdAt: number;
   updatedAt: number;
+  soldAt: number | null;
   photoKeys: string[];
   titleEn: string | null;
   titleEs: string | null;
@@ -48,6 +50,7 @@ export function rowToItem(row: ItemRow, photoKeys: string[]): Item {
     status: row.status as Item["status"],
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    soldAt: row.sold_at ?? null,
     photoKeys,
     titleEn: row.title_en ?? null,
     titleEs: row.title_es ?? null,

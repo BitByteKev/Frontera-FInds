@@ -212,6 +212,26 @@ describe("admin item CRUD", () => {
     expect(res.status).toBe(401);
   });
 
+  it("admin list surfaces soldAt (null until sold)", async () => {
+    const headers = await adminHeaders();
+
+    let ctx = createExecutionContext();
+    let res = await app.fetch(new Request("http://x/api/admin/items", {
+      method: "POST", headers,
+      body: JSON.stringify({ title: "Stool", description: "d", status: "published" }),
+    }), env, ctx);
+    await waitOnExecutionContext(ctx);
+    const { id } = await res.json<{ id: string }>();
+
+    ctx = createExecutionContext();
+    res = await app.fetch(new Request("http://x/api/admin/items", { headers }), env, ctx);
+    await waitOnExecutionContext(ctx);
+    const { items } = await res.json<{ items: any[] }>();
+    const it = items.find((x) => x.id === id);
+    expect(it).toBeTruthy();
+    expect(it.soldAt).toBeNull();
+  });
+
   it("creates, lists, marks sold, and deletes", async () => {
     const headers = await adminHeaders();
 
