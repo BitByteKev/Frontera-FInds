@@ -57,6 +57,11 @@ export default function ContactButtons({ item }: { item: Item }) {
               {t("contact.instagramDm")}
             </a>
           )}
+          {cfg.facebookUrl && (
+            <a className="ff-btn ff-btn-outline" href={cfg.facebookUrl} target="_blank" rel="noreferrer">
+              {t("contact.facebook")}
+            </a>
+          )}
         </>
       )}
       <button className="ff-btn ff-btn-outline" onClick={() => setShowForm((s) => !s)}>
