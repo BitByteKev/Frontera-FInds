@@ -20,8 +20,8 @@ export default function About() {
       <p style={{ lineHeight: 1.7 }}>
         {t("about.howToBuyLead")}{" "}
         <strong>{t("contact.whatsapp")}</strong>, <strong>{t("contact.sms")}</strong>,{" "}
-        <strong>{t("contact.messageSeller")}</strong>, {t("about.orWord")}{" "}
-        <strong>Instagram</strong>{t("about.howToBuyTail")}
+        <strong>{t("contact.messageSeller")}</strong>, <strong>Instagram</strong>,{" "}
+        {t("about.orWord")} <strong>Facebook Marketplace</strong>{t("about.howToBuyTail")}
       </p>
     </main>
   );
