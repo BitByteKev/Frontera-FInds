@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import type { Item } from "../lib/types";
 import { formatDual } from "../lib/format";
@@ -9,6 +9,7 @@ import Gallery from "../components/Gallery";
 import { useLang } from "../i18n/LanguageContext";
 import { useRate } from "../lib/currency";
 import { localizeItem } from "../lib/localize";
+import reviewsData from "../data/reviews.json";
 
 export default function ItemPage() {
   const { id } = useParams();
@@ -40,6 +41,11 @@ export default function ItemPage() {
       {view.status === "sold"
         ? <p style={{ fontWeight: 700 }}>{t("item.soldNotice")}</p>
         : <ContactButtons item={view} />}
+      <p style={{ marginTop: 14, fontSize: 14 }}>
+        <Link to="/reviews">
+          ★ {reviewsData.summary.rating} · {t("reviews.itemTrust", { count: String(reviewsData.summary.count) })}
+        </Link>
+      </p>
     </main>
   );
 }

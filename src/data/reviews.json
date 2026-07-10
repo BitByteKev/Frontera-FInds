@@ -1,0 +1,32 @@
+{
+  "summary": {
+    "rating": 4.9,
+    "count": 51,
+    "strengths": {
+      "communication": 30,
+      "pricing": 27,
+      "punctuality": 27,
+      "itemDescription": 24
+    }
+  },
+  "reviews": [
+    {
+      "name": "Noella",
+      "date": "2026-03-11",
+      "tags": ["punctuality", "communication", "pricing", "itemDescription"],
+      "text": "Great transaction wonderful communication very happy. I highly recommend the seller."
+    },
+    {
+      "name": "Marie",
+      "date": "2026-03-09",
+      "tags": ["punctuality", "communication", "pricing"],
+      "text": "Great to do business with , I would buy again from them Thank you"
+    },
+    {
+      "name": "Denise",
+      "date": "2026-02-13",
+      "tags": ["punctuality", "communication", "pricing", "itemDescription"],
+      "text": "Easy and great transaction. Item is beautiful and priced right! I even got a compliment from someon walking by on how beautiful it was."
+    }
+  ]
+}

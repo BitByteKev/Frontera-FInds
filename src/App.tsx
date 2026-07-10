@@ -7,6 +7,7 @@ import { useLang } from "./i18n/LanguageContext";
 import Home from "./pages/Home";
 import ItemPage from "./pages/ItemPage";
 import About from "./pages/About";
+import Reviews from "./pages/Reviews";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminManage from "./pages/admin/AdminManage";
 import AdminEdit from "./pages/admin/AdminEdit";
@@ -48,6 +49,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/item/:id" element={<ItemPage />} />
         <Route path="/about" element={<About />} />
+        <Route path="/reviews" element={<Reviews />} />
         <Route path="/admin" element={<AdminLogin />} />
         <Route path="/admin/manage" element={<AdminManage />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -64,6 +66,8 @@ export default function App() {
         <p className="ff-footer-meta">
           {t("footer.meta")}
           <Link to="/about">{t("footer.howItWorks")}</Link>
+          {" · "}
+          <Link to="/reviews">{t("footer.reviews")}</Link>
         </p>
         <div style={{ display: "flex", gap: 16 }}>
           <a
