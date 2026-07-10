@@ -65,19 +65,36 @@ export default function App() {
           {t("footer.meta")}
           <Link to="/about">{t("footer.howItWorks")}</Link>
         </p>
-        <a
-          className="ff-social"
-          href="https://instagram.com/fronterafind.s"
-          target="_blank"
-          rel="noreferrer"
-          aria-label={t("footer.instagramAria")}
-        >
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <rect x="2.5" y="2.5" width="19" height="19" rx="5.5" stroke="currentColor" strokeWidth="1.8" />
-            <circle cx="12" cy="12" r="4.2" stroke="currentColor" strokeWidth="1.8" />
-            <circle cx="17.4" cy="6.6" r="1.25" fill="currentColor" />
-          </svg>
-        </a>
+        <div style={{ display: "flex", gap: 16 }}>
+          <a
+            className="ff-social"
+            href="https://instagram.com/fronterafind.s"
+            target="_blank"
+            rel="noreferrer"
+            aria-label={t("footer.instagramAria")}
+          >
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="2.5" y="2.5" width="19" height="19" rx="5.5" stroke="currentColor" strokeWidth="1.8" />
+              <circle cx="12" cy="12" r="4.2" stroke="currentColor" strokeWidth="1.8" />
+              <circle cx="17.4" cy="6.6" r="1.25" fill="currentColor" />
+            </svg>
+          </a>
+          <a
+            className="ff-social"
+            href="https://www.facebook.com/marketplace/profile/61558944447221/"
+            target="_blank"
+            rel="noreferrer"
+            aria-label={t("footer.facebookAria")}
+          >
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="2.5" y="2.5" width="19" height="19" rx="5.5" stroke="currentColor" strokeWidth="1.8" />
+              <path
+                d="M15.6 8.3h-1.4c-.6 0-1 .4-1 1v1.5h2.3l-.35 2.2h-1.95v6h-2.3v-6H9.3v-2.2h1.6V9.2c0-1.9 1.1-3 3-3h1.7v2.1z"
+                fill="currentColor"
+              />
+            </svg>
+          </a>
+        </div>
       </footer>
     </>
   );

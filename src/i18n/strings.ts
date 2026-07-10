@@ -11,6 +11,7 @@ export const en = {
   "footer.meta": "Shipping across the USA · Local pickup & delivery in San Diego ⟷ Tijuana · ",
   "footer.howItWorks": "How it works",
   "footer.instagramAria": "Frontera Finds on Instagram (@fronterafind.s)",
+  "footer.facebookAria": "Frontera Finds on Facebook Marketplace",
 
   "home.heroTitle": "Two cities. One marketplace.",
   "home.heroSub": "El swapmeet sin fronteras",
@@ -88,6 +89,7 @@ export const es: Record<TranslationKey, string> = {
   "footer.meta": "Envíos a todo EE. UU. · Recogida y entrega local en San Diego ⟷ Tijuana · ",
   "footer.howItWorks": "Cómo funciona",
   "footer.instagramAria": "Frontera Finds en Instagram (@fronterafind.s)",
+  "footer.facebookAria": "Frontera Finds en Facebook Marketplace",
 
   "home.heroTitle": "Dos ciudades. Un mercado.",
   "home.heroSub": "El swapmeet sin fronteras",
