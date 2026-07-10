@@ -21,6 +21,7 @@ export default defineWorkersConfig(async () => {
               PUBLIC_WHATSAPP: "+16199448759",
               PUBLIC_SMS: "+16199448759",
               PUBLIC_INSTAGRAM_URL: "https://instagram.com/test",
+              PUBLIC_FACEBOOK_URL: "https://www.facebook.com/marketplace/profile/61558944447221/",
               OWNER_EMAIL: "owner@example.com",
               PUBLIC_SITE_URL: "https://fronterafinds.com",
             },

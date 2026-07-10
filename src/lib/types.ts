@@ -22,4 +22,5 @@ export interface SiteConfig {
   whatsapp: string;
   sms: string;
   instagramUrl: string;
+  facebookUrl: string;
 }

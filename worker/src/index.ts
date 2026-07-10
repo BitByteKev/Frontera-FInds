@@ -17,6 +17,7 @@ export interface Env {
   PUBLIC_WHATSAPP: string;
   PUBLIC_SMS: string;
   PUBLIC_INSTAGRAM_URL: string;
+  PUBLIC_FACEBOOK_URL: string;
   OWNER_EMAIL: string;
   PUBLIC_SITE_URL: string;
 }
@@ -29,6 +30,7 @@ app.get("/api/config", (c) =>
     whatsapp: c.env.PUBLIC_WHATSAPP,
     sms: c.env.PUBLIC_SMS,
     instagramUrl: c.env.PUBLIC_INSTAGRAM_URL,
+    facebookUrl: c.env.PUBLIC_FACEBOOK_URL,
   })
 );
 app.route("/", publicItems);
